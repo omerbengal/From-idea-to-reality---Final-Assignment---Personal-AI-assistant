@@ -8,7 +8,10 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
+SCOPES = [
+    "https://www.googleapis.com/auth/calendar.readonly",
+    "https://www.googleapis.com/auth/tasks.readonly"
+]
 
 CALENDARS = {
     "primary": "primary",
@@ -38,9 +41,14 @@ def setup_credentials():
     return creds
 
 
-def build_service():
-    global SERVICE
-    SERVICE = build("calendar", "v3", credentials=setup_credentials())
+def calendar_service_build():
+    global CALENDAR_SERVICE
+    CALENDAR_SERVICE = build("calendar", "v3", credentials=setup_credentials())
+
+
+def tasks_service_build():
+    global TASKS_SERVICE
+    TASKS_SERVICE = build("tasks", "v1", credentials=setup_credentials())
 
 
 def add_days_to_date(date: datetime, days: int) -> datetime:
@@ -62,7 +70,7 @@ def get_now() -> datetime:
 def get_events(calendarID: str, time_max: datetime) -> list:
     now = get_now().isoformat()
     events_result = (
-        SERVICE.events()
+        CALENDAR_SERVICE.events()
         .list(
             calendarId=calendarID,
             maxResults=100,
@@ -78,17 +86,33 @@ def get_events(calendarID: str, time_max: datetime) -> list:
     return events
 
 
+def get_tasks_lists() -> list:
+    results = TASKS_SERVICE.tasklists().list().execute()
+    return results.get("items", [])
+
+
 def main():
     try:
-        build_service()
+        calendar_service_build()
+        tasks_service_build()
 
-        # Call the Calendar API
         events = get_events(CALENDARS["primary"], get_nearest_saturday())
 
-        # Prints the start and name of the next 10 events
-        for event in events:
-            start = event["start"].get("dateTime", event["start"].get("date"))
-            print(start, event["summary"])
+        # if not events:
+        #     print("No upcoming events found.")
+
+        # for event in events:
+        #     start = event["start"].get("dateTime", event["start"].get("date"))
+        #     print(start, event["summary"])
+
+        lists = get_tasks_lists()
+
+        # if not lists:
+        #     print("No task lists found.")
+        #     return
+
+        # for item in lists:
+        #     print(f"{item['title']} ({item['id']})")
 
     except HttpError as error:
         print(f"An error occurred: {error}")
