@@ -101,7 +101,7 @@ def get_tasks_from_list(tasklistID: str) -> list:
     return results.get("items", [])
 
 
-def example_get_and_print_events():
+def example_get_and_print_events_from_primary_calendar():
     events = get_events_up_to_certain_date(
         CALENDARS["primary"], get_nearest_saturday())
 
@@ -136,9 +136,9 @@ def main():
         calendar_service_build()
         tasks_service_build()
 
-        example_get_and_print_events()
+        example_get_and_print_events_from_primary_calendar()
 
-        example_get_and_print_tasks_from_first_list()
+        # example_get_and_print_tasks_from_first_list()
 
     except HttpError as error:
         print(f"An error occurred: {error}")
