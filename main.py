@@ -101,7 +101,7 @@ def get_tasks_from_list(tasklistID: str) -> list:
     return results.get("items", [])
 
 
-def example_get_and_print_events_from_primary_calendar():
+def example_get_and_print_events_from_primary_calendar_from_toady_up_to_nearest_saturday():
     events = get_events_up_to_certain_date(
         CALENDARS["primary"], get_nearest_saturday())
 
@@ -109,17 +109,24 @@ def example_get_and_print_events_from_primary_calendar():
         print("No upcoming events found.")
 
     for event in events:
-        start = event["start"].get("dateTime", event["start"].get("date"))
-        print(start, event["summary"])
+        title = event.get("summary", "")
+        begda = event.get("start", {}).get("dateTime", "")
+        endda = event.get("end", {}).get("dateTime", "")
+        status = event.get("status", "")  # confirmed, tentative, cancelled # nopep8
+        description = event.get("description", "")
+        location = event.get("location", "")
+
+        print(f"title: {title}\nbegda: {begda}\nendda: {endda}\nstatus: {status}\ndescription: {description}\nlocation: {location}\n")  # nopep8
 
 
 def example_get_and_print_tasks_from_first_list():
-    tasks_lists = get_tasks_lists()
+    tasks_lists = get_tasks_lists()  # get all tasks lists # nopep8
 
-    for list in tasks_lists:
-        print(f"{list['title']} ({list['id']})")
+    # print all tasks lists
+    # for list in tasks_lists:
+    #     print(f"{list['title']} ({list['id']})")
 
-    print()
+    # print() # spacing # nopep8
 
     tasks = get_tasks_from_list(tasks_lists[0]["id"])
 
@@ -136,9 +143,12 @@ def main():
         calendar_service_build()
         tasks_service_build()
 
-        example_get_and_print_events_from_primary_calendar()
-
-        # example_get_and_print_tasks_from_first_list()
+        print()
+        print("Example events from primary calendar from today up to nearest Saturday:\n")
+        example_get_and_print_events_from_primary_calendar_from_toady_up_to_nearest_saturday()
+        print("---------------------------------------")
+        print("Example tasks from first list:\n")
+        example_get_and_print_tasks_from_first_list()
 
     except HttpError as error:
         print(f"An error occurred: {error}")
