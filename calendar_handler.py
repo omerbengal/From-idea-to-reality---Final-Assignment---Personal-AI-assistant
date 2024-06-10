@@ -1,11 +1,18 @@
 import datetime
-from setup import CALENDAR_SERVICE
+import setup
+
 
 CALENDARS = {
     "primary": "primary",
     "birthdays": "526f029f573f9d364bc5c58714241dc4fe864f2c67db8b1af64ca0b2a1f761db@group.calendar.google.com",
     "reichman": "qk0ltn045s6fuo1pal302sebb7rn7dch@import.calendar.google.com",
 }
+SETUP = setup.GoogleServices()
+
+
+def get_calendars_IDs() -> list[str]:
+    results = SETUP.calendar_service.calendarList().list().execute()
+    return results.get("items", [])
 
 
 def add_days_to_date(date: datetime, days: int) -> datetime:
@@ -25,10 +32,33 @@ def get_now() -> datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
 
+# def get_events_up_to_certain_date(calendarID: str, time_max: datetime) -> list:
+#     now = get_now().isoformat()
+#     events_result = (
+#         SETUP.calendar_service.events()
+#         .list(
+#             calendarId=calendarID,
+#             maxResults=100,
+#             timeMin=now,
+#             timeMax=time_max.isoformat(),
+#             singleEvents=True,
+#             orderBy="startTime",
+#         )
+#         .execute()
+#     )
+#     events = events_result.get("items", [])
+
+#     return events
+
 def get_events_up_to_certain_date(calendarID: str, time_max: datetime) -> list:
     now = get_now().isoformat()
+
+    # Convert time_max to datetime if it's a string
+    if isinstance(time_max, str):
+        time_max = datetime.datetime.fromisoformat(time_max)
+
     events_result = (
-        CALENDAR_SERVICE.events()
+        SETUP.calendar_service.events()
         .list(
             calendarId=calendarID,
             maxResults=100,
