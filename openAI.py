@@ -3,6 +3,8 @@ import json
 from calendar_handler import *
 from tasks_handler import *
 
+TODAY = get_now().isoformat()
+
 client = OpenAI(api_key="sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv")  # nopep8
 SYSTEM_ROLE = """You are a helpful AI personal assistant.
 Your main essence is to help the user to manage his busy life.
@@ -27,23 +29,44 @@ This could be done in several ways:
 You will always respond in a way that is helpful, kind, and honest to the user.
 You will never respond with anything that is not helpful, kind, or honest.
 
-When getting the user's tasks and calendar events, provide them as they are without any modifications or rephrasing.
+Important information:
+- Today is {TODAY}.
+- When getting the user's tasks and calendar events, you can restructure them as you see fit, but in any case - do not modify the name or description of the events or tasks. Even if the user asked for a summary of the tasks, you should not modify the name or description of the events, calendars, lists, or tasks.
+- Weekends are considered to be Friday and Saturday.
 
 You can use the following functions:
-- get_nearest_saturday(date: datetime) -> datetime: Get the nearest Saturday from a given date.
-- get_events_up_to_certain_date(calendarID: str, time_max: datetime) -> list: Get all events from now up to a certain date.
-- get_tasks_lists() -> list: Get all tasks lists.
-- get_tasks_from_list(tasklistID: str) -> list: Get all tasks from a list.
-- get_calendars_IDs() -> list: Get all calendars IDs.
-- get_all_tasks() -> list: Get all tasks.
-- get_all_uncompleted_tasks() -> list: Get all uncompleted tasks.
+- get_nearest_saturday(date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> datetime: Get the next nearest Saturday to a given date (default is today).
+- get_all_events_from_specific_calendar_up_to_certain_date(calendarID: str, time_max: datetime) -> list[dict]: Get all events from now up to a certain date from a given calendar.
+- get_all_events_from_all_calendars_up_to_certain_date(time_max: datetime) -> dict[str, list[dict]]: Get all events from all calendars up to a certain date.
+- get_all_calendars_data() -> list[str]: Get all calendars data, including their IDs and summary.
+- get_all_tasks_lists() -> list: Get all tasks lists.
+- get_all_tasks_from_list(tasklistID: str) -> list: Get all tasks from a given list.
+- get_all_tasks() -> dict[str, list]: Get all tasks, organized by lists.
+- get_all_uncompleted_tasks() -> dict[str, list]: Get all uncompleted tasks, organized by lists.
 """
 FUNCTIONS = [
     {
         "type": "function",
         "function": {
-                "name": "get_events_up_to_certain_date",
-                "description": "Get all events from now up to a certain date",
+                "name": "get_nearest_saturday",
+                "description": "Get the next nearest Saturday to a given date (default is today)",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "date": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "The date to get the nearest Saturday to (default is today)."
+                        }
+                    },
+                }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+                "name": "get_all_events_from_specific_calendar_up_to_certain_date",
+                "description": "Get all events from now up to a certain date from a given calendar",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -64,7 +87,36 @@ FUNCTIONS = [
     {
         "type": "function",
         "function": {
-                "name": "get_tasks_lists",
+                "name": "get_all_events_from_all_calendars_up_to_certain_date",
+                "description": "Get all events from all calendars up to a certain date",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "time_max": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "The maximum date and time to get events up to."
+                        }
+                    },
+                    "required": ["time_max"]
+                },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+                "name": "get_all_calendars_data",
+                "description": "Get all calendars data, including their IDs and summary",
+                "parameters": {
+                    "type": "object",
+                    "properties": {},
+                },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+                "name": "get_all_tasks_lists",
                 "description": "Get all tasks lists",
                 "parameters": {
                     "type": "object",
@@ -75,8 +127,8 @@ FUNCTIONS = [
     {
         "type": "function",
         "function": {
-                "name": "get_tasks_from_list",
-                "description": "Get all tasks from a list",
+                "name": "get_all_tasks_from_list",
+                "description": "Get all tasks from a given list",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -92,30 +144,8 @@ FUNCTIONS = [
     {
         "type": "function",
         "function": {
-                "name": "get_calendars_IDs",
-                "description": "Get all calendars IDs",
-                "parameters": {
-                    "type": "object",
-                    "properties": {},
-                },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-                "name": "get_nearest_saturday",
-                "description": "Get the nearest Saturday",
-                "parameters": {
-                    "type": "object",
-                    "properties": {},
-                },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
                 "name": "get_all_tasks",
-                "description": "Get all tasks",
+                "description": "Get all tasks, organized by lists",
                 "parameters": {
                     "type": "object",
                     "properties": {},
@@ -126,7 +156,7 @@ FUNCTIONS = [
         "type": "function",
         "function": {
                 "name": "get_all_uncompleted_tasks",
-                "description": "Get all uncompleted tasks",
+                "description": "Get all uncompleted tasks, organized by lists",
                 "parameters": {
                     "type": "object",
                     "properties": {},
@@ -136,46 +166,53 @@ FUNCTIONS = [
 ]
 
 
-def get_nearest_saturday_function():
+def get_nearest_saturday_function(date: datetime = datetime.datetime.now(datetime.timezone.utc)):
     """Get the nearest Saturday"""
-    nearest_saturday = get_nearest_saturday()
+    nearest_saturday = get_nearest_saturday(date)
     return json.dumps({"nearest_saturday": nearest_saturday.isoformat()})
 
 
-def get_events_up_to_certain_date_function(calendarID, time_max):
+def get_all_events_from_specific_calendar_up_to_certain_date_function(calendarID, time_max):
     """Get all events from now up to a certain date"""
-    events = get_events_up_to_certain_date(calendarID, time_max)
-    return json.dumps(events)
+    events = get_all_events_from_specific_calendar_up_to_certain_date(calendarID, time_max)  # nopep8
+    return json.dumps(events, indent=4, ensure_ascii=False)
 
 
-def get_tasks_lists_function():
+def get_all_events_from_all_calendars_up_to_certain_date_function(time_max):
+    """Get all events from all calendars up to a certain date"""
+    events = get_all_events_from_all_calendars_up_to_certain_date(time_max)  # nopep8
+    return json.dumps(events, indent=4, ensure_ascii=False)
+
+
+def get_all_calendars_data_function():
+    """Get all calendars data, including their IDs and summary"""
+    calendars_data = get_all_calendars_data()
+    return json.dumps(calendars_data, indent=4, ensure_ascii=False)
+
+
+def get_all_tasks_lists_function():
     """Get all tasks lists"""
-    tasks_lists = get_tasks_lists()
-    return json.dumps(tasks_lists)
+    tasks_lists = get_all_tasks_lists()
+    return json.dumps(tasks_lists, indent=4, ensure_ascii=False)
 
 
-def get_tasks_from_list_function(tasklistID):
+def get_all_tasks_from_list_function(tasklistID):
     """Get all tasks from a list"""
-    tasks = get_tasks_from_list(tasklistID)
-    return json.dumps(tasks)
-
-
-def get_calendars_IDs_function():
-    """Get all calendars IDs"""
-    calendars_ids = get_calendars_IDs()
-    return json.dumps(calendars_ids)
+    tasks = get_all_tasks_from_list(tasklistID)
+    return json.dumps(tasks, indent=4, ensure_ascii=False)
 
 
 def get_all_tasks_function():
-    """Get all tasks"""
+    """Get all tasks, organized by lists"""
     tasks = get_all_tasks()
-    return json.dumps(tasks)
+    return json.dumps(tasks, indent=4, ensure_ascii=False)
 
 
 def get_all_uncompleted_tasks_function():
-    """Get all uncompleted tasks"""
+    """Get all uncompleted tasks, organized by lists"""
     tasks = get_all_uncompleted_tasks()
-    return json.dumps(tasks)
+    print(f"uncompleted tasks: {json.dumps(tasks, indent=4, ensure_ascii=False)}")  # nopep8
+    return json.dumps(tasks, indent=4, ensure_ascii=False)
 
 
 # def get_response(prompt: str) -> str:
@@ -233,10 +270,22 @@ def get_all_uncompleted_tasks_function():
 #     return response_message.content if response_message.content else ''
 
 def get_response(prompt: str) -> str:
+    print(f"today is {TODAY}")
     messages = [
         {"role": "system", "content": SYSTEM_ROLE},
         {"role": "user", "content": prompt}
     ]
+
+    available_functions = {
+        "get_nearest_saturday": get_nearest_saturday_function,
+        "get_all_events_from_specific_calendar_up_to_certain_date": get_all_events_from_specific_calendar_up_to_certain_date_function,
+        "get_all_events_from_all_calendars_up_to_certain_date": get_all_events_from_all_calendars_up_to_certain_date_function,
+        "get_all_calendars_data": get_all_calendars_data_function,
+        "get_all_tasks_lists": get_all_tasks_lists_function,
+        "get_all_tasks_from_list": get_all_tasks_from_list_function,
+        "get_all_tasks": get_all_tasks_function,
+        "get_all_uncompleted_tasks": get_all_uncompleted_tasks_function,
+    }
 
     try:
         response = client.chat.completions.create(
@@ -249,16 +298,11 @@ def get_response(prompt: str) -> str:
         response_message = response.choices[0].message
         tool_calls = response_message.tool_calls
 
+        print(f"checking if need to use tools")
+        counter = 0
         while tool_calls:
-            available_functions = {
-                "get_nearest_saturday": get_nearest_saturday_function,
-                "get_events_up_to_certain_date": get_events_up_to_certain_date_function,
-                "get_tasks_lists": get_tasks_lists_function,
-                "get_tasks_from_list": get_tasks_from_list_function,
-                "get_calendars_IDs": get_calendars_IDs_function,
-                "get_all_tasks": get_all_tasks_function,
-                "get_all_uncompleted_tasks": get_all_uncompleted_tasks_function,
-            }
+            counter += 1
+            print(f"I'm using tools now! ({counter})")
             messages.append(response_message)
 
             for tool_call in tool_calls:
@@ -266,6 +310,7 @@ def get_response(prompt: str) -> str:
                 function_to_call = available_functions.get(function_name)
                 if function_to_call:
                     function_args = json.loads(tool_call.function.arguments)
+                    print(f"{counter} - calling function {function_name}, with args {function_args}")  # nopep8
                     try:
                         function_response = function_to_call(**function_args)
                         messages.append(

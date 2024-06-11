@@ -1,34 +1,46 @@
+import json
 import setup
+from utilities import *
 
 
 SETUP = setup.GoogleServices()
 
 
-def get_tasks_lists() -> list:
+def get_all_tasks_lists() -> list:
     results = SETUP.tasks_service.tasklists().list().execute()
     return results.get("items", [])
 
 
-def get_tasks_from_list(tasklistID: str) -> list:
+def get_all_tasks_from_list(tasklistID: str) -> list:
     results = SETUP.tasks_service.tasks().list(tasklist=tasklistID).execute()
-    return results.get("items", [])
+    tasks = results.get("items", [])
 
-
-def get_all_tasks() -> list:
-    tasks = []
-    lists = get_tasks_lists()
-    for list in lists:
-        tasks.extend(get_tasks_from_list(list["id"]))
+    # Clean bidirectional text
+    for task in tasks:
+        task["title"] = clean_bidirectional_text(task["title"])
+        if "notes" in task:
+            task["notes"] = clean_bidirectional_text(task["notes"])
     return tasks
 
 
-def get_all_uncompleted_tasks() -> list:
+def get_all_tasks() -> dict[str, list]:
+    lists = get_all_tasks_lists()
+    tasks = {}
+    for list in lists:
+        tasks[list["title"]] = get_all_tasks_from_list(list["id"])
+    return tasks
+
+
+def get_all_uncompleted_tasks() -> dict[str, list]:
     tasks = get_all_tasks()
-    return [task for task in tasks if not task["status"] == "completed"]
+    uncompleted_tasks = {}
+    for list in tasks:
+        uncompleted_tasks[list] = [task for task in tasks[list] if task["status"] != "completed"]  # nopep8
+    return uncompleted_tasks
 
 
 def example_get_and_print_tasks_from_first_list():
-    tasks_lists = get_tasks_lists()  # get all tasks lists # nopep8
+    tasks_lists = get_all_tasks_lists()  # get all tasks lists # nopep8
 
     # print all tasks lists
     # for list in tasks_lists:
@@ -36,7 +48,7 @@ def example_get_and_print_tasks_from_first_list():
 
     # print() # spacing # nopep8
 
-    tasks = get_tasks_from_list(tasks_lists[0]["id"])
+    tasks = get_all_tasks_from_list(tasks_lists[0]["id"])
 
     for task in tasks:
         title = task["title"]
