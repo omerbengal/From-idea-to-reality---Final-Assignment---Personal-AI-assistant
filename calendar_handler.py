@@ -11,7 +11,7 @@ CALENDARS = {
 SETUP = setup.GoogleServices()
 
 
-def get_all_calendars_data() -> list[str]:
+def get_all_calendars_data() -> dict[str, str]:
     results = SETUP.calendar_service.calendarList().list().execute()
     calendars_dicts = results.get("items", [])
     return calendars_dicts
@@ -19,13 +19,6 @@ def get_all_calendars_data() -> list[str]:
 
 def add_days_to_date(date: datetime, days: int) -> datetime:
     return date + datetime.timedelta(days=days)
-
-
-def get_nearest_saturday(date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> datetime:
-    # Calculate the number of days to add to reach Saturday (5 - today.weekday())
-    # If today is Sunday (weekday() returns 6), we add 6 days to reach the next Saturday
-    days_from_today_to_nearest_saturday = 5 - date.weekday() if date.weekday() <= 5 else 6  # nopep8
-    return add_days_to_date(date, days_from_today_to_nearest_saturday)
 
 
 def get_now() -> datetime:
@@ -48,6 +41,12 @@ def get_now() -> datetime:
     #     events = events_result.get("items", [])
 
     #     return events
+
+
+def get_Xth_saturday_from_date(X: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> datetime:
+    days_from_today_to_nearest_saturday = 5 - date.weekday() if date.weekday() <= 5 else 6  # nopep8
+    days_from_today_to_X_saturday = days_from_today_to_nearest_saturday + (X * 7)  # nopep8
+    return add_days_to_date(date, days_from_today_to_X_saturday)
 
 
 def get_all_events_from_specific_calendar_up_to_certain_date(calendarID: str, time_max: datetime) -> list[dict]:
@@ -81,9 +80,14 @@ def get_all_events_from_specific_calendar_up_to_certain_date(calendarID: str, ti
     return events
 
 
-def get_all_events_from_all_calendars_up_to_certain_date(time_max: datetime) -> dict[str, list[dict]]:
+def get_all_events_from_today_up_to_certain_date(time_max: datetime, calendars: dict[str, str] = None) -> dict[str, list[dict]]:
+
+    # if calendars is provided, it should be a dict of calendars with at least these keys:
+    # "id", "summary"
+
     events = {}
-    calendars = get_all_calendars_data()
+    if calendars is None:
+        calendars = get_all_calendars_data()
     for calendar in calendars:
         calendar_id = calendar["id"]
         calendar_title = calendar["summary"]

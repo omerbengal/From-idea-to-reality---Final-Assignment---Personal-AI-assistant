@@ -15,9 +15,18 @@ def main():
         #         response = get_response(message)
         #         print(response)
 
-        message = f"""can you summarize and sectionize all my uncompleted tasks for me?
-        also provide a paragraph of your insights about the tasks and the expected outcome of the tasks?"""
+        # message = f"""can you summarize and sectionize all my uncompleted tasks for me?
+        # also provide a paragraph of your insights about the tasks and the expected outcome of the tasks?"""
 
+        # get all calendar events from today to next weekend
+        # events = get_all_events_from_today_up_to_certain_date(get_Xth_saturday_from_date(1))  # nopep8
+        # put it in a json FILE
+        # with open("omeromeromer.json", "w") as f:
+        #     json.dump(events, f, indent=4, ensure_ascii=False)
+
+        # print(events)
+
+        message = f"""Can you provide me with an overview of all events from today up to the end of the month?"""
         response = get_response(message)
         print(response)
 
