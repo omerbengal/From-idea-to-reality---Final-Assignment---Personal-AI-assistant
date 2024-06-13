@@ -3,6 +3,7 @@ import setup
 from calendar_handler import *
 from tasks_handler import *
 from openAI import *
+from memory import *
 
 
 def main():
@@ -26,7 +27,7 @@ def main():
 
         # print(events)
 
-        message = f"""Can you provide me with an overview of all events from today up to the end of the month?"""
+        message = f"""Can you summarize my next week's calendar events for me?"""
         response = get_response(message)
         print(response)
 

@@ -3,15 +3,16 @@ import setup
 from utilities import *
 
 
-CALENDARS = {
-    "primary": "primary",
-    "birthdays": "526f029f573f9d364bc5c58714241dc4fe864f2c67db8b1af64ca0b2a1f761db@group.calendar.google.com",
-    "reichman": "qk0ltn045s6fuo1pal302sebb7rn7dch@import.calendar.google.com",
-}
 SETUP = setup.GoogleServices()
 
 
-def get_all_calendars_data() -> dict[str, str]:
+def get_Xth_saturday_from_date(X: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> datetime:
+    days_from_today_to_nearest_saturday = 5 - date.weekday() if date.weekday() <= 5 else 6  # nopep8
+    days_from_today_to_X_saturday = days_from_today_to_nearest_saturday + (X * 7)  # nopep8
+    return add_days_to_date(date, days_from_today_to_X_saturday)
+
+
+def _get_all_calendars_data() -> list[dict[str, str]]:
     results = SETUP.calendar_service.calendarList().list().execute()
     calendars_dicts = results.get("items", [])
     return calendars_dicts
@@ -24,32 +25,8 @@ def add_days_to_date(date: datetime, days: int) -> datetime:
 def get_now() -> datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
-    # def get_events_up_to_certain_date(calendarID: str, time_max: datetime) -> list:
-    #     now = get_now().isoformat()
-    #     events_result = (
-    #         SETUP.calendar_service.events()
-    #         .list(
-    #             calendarId=calendarID,
-    #             maxResults=100,
-    #             timeMin=now,
-    #             timeMax=time_max.isoformat(),
-    #             singleEvents=True,
-    #             orderBy="startTime",
-    #         )
-    #         .execute()
-    #     )
-    #     events = events_result.get("items", [])
 
-    #     return events
-
-
-def get_Xth_saturday_from_date(X: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> datetime:
-    days_from_today_to_nearest_saturday = 5 - date.weekday() if date.weekday() <= 5 else 6  # nopep8
-    days_from_today_to_X_saturday = days_from_today_to_nearest_saturday + (X * 7)  # nopep8
-    return add_days_to_date(date, days_from_today_to_X_saturday)
-
-
-def get_all_events_from_specific_calendar_up_to_certain_date(calendarID: str, time_max: datetime) -> list[dict]:
+def _get_all_events_from_specific_calendar_up_to_certain_date(calendarID: str, time_max: datetime) -> list[dict[str, str]]:
     now = get_now().isoformat()
 
     # Convert time_max to datetime if it's a string
@@ -80,24 +57,19 @@ def get_all_events_from_specific_calendar_up_to_certain_date(calendarID: str, ti
     return events
 
 
-def get_all_events_from_today_up_to_certain_date(time_max: datetime, calendars: dict[str, str] = None) -> dict[str, list[dict]]:
-
-    # if calendars is provided, it should be a dict of calendars with at least these keys:
-    # "id", "summary"
-
+def get_all_events_from_today_up_to_certain_date(time_max: datetime, calendars: list[dict[str, str]] = None) -> dict[str, list[dict[str, str]]]:  # nopep8
     events = {}
-    if calendars is None:
-        calendars = get_all_calendars_data()
+    if calendars is None or len(calendars) == 0:
+        calendars = _get_all_calendars_data()
     for calendar in calendars:
         calendar_id = calendar["id"]
         calendar_title = calendar["summary"]
-        events[calendar_title] = get_all_events_from_specific_calendar_up_to_certain_date(calendar_id, time_max)  # nopep8
+        events[calendar_title] = _get_all_events_from_specific_calendar_up_to_certain_date(calendar_id, time_max)  # nopep8
     return events
 
 
 def example_get_and_print_events_from_primary_calendar_from_toady_up_to_nearest_saturday():
-    events = get_all_events_from_specific_calendar_up_to_certain_date(
-        CALENDARS["primary"], get_nearest_saturday())
+    events = _get_all_events_from_specific_calendar_up_to_certain_date("primary", get_Xth_saturday_from_date(0))  # nopep8
 
     if not events:
         print("No upcoming events found.")

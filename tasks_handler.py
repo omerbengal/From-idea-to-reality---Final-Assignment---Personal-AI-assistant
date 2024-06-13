@@ -6,12 +6,12 @@ from utilities import *
 SETUP = setup.GoogleServices()
 
 
-def get_all_tasks_lists() -> list:
+def _get_all_tasks_lists() -> list[dict[str, str]]:
     results = SETUP.tasks_service.tasklists().list().execute()
     return results.get("items", [])
 
 
-def get_all_tasks_from_list(tasklistID: str) -> list:
+def _get_all_tasks_from_list(tasklistID: str) -> list[dict[str, str]]:
     results = SETUP.tasks_service.tasks().list(tasklist=tasklistID).execute()
     tasks = results.get("items", [])
 
@@ -23,15 +23,15 @@ def get_all_tasks_from_list(tasklistID: str) -> list:
     return tasks
 
 
-def get_all_tasks() -> dict[str, list]:
-    lists = get_all_tasks_lists()
+def get_all_tasks() -> list[dict[str, str]]:
+    lists = _get_all_tasks_lists()
     tasks = {}
     for list in lists:
-        tasks[list["title"]] = get_all_tasks_from_list(list["id"])
+        tasks[list["title"]] = _get_all_tasks_from_list(list["id"])
     return tasks
 
 
-def get_all_uncompleted_tasks() -> dict[str, list]:
+def get_all_uncompleted_tasks() -> list[dict[str, str]]:
     tasks = get_all_tasks()
     uncompleted_tasks = {}
     for list in tasks:
@@ -40,7 +40,7 @@ def get_all_uncompleted_tasks() -> dict[str, list]:
 
 
 def example_get_and_print_tasks_from_first_list():
-    tasks_lists = get_all_tasks_lists()  # get all tasks lists # nopep8
+    tasks_lists = _get_all_tasks_lists()  # get all tasks lists # nopep8
 
     # print all tasks lists
     # for list in tasks_lists:
@@ -48,7 +48,7 @@ def example_get_and_print_tasks_from_first_list():
 
     # print() # spacing # nopep8
 
-    tasks = get_all_tasks_from_list(tasks_lists[0]["id"])
+    tasks = _get_all_tasks_from_list(tasks_lists[0]["id"])
 
     for task in tasks:
         title = task["title"]
