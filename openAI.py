@@ -7,7 +7,7 @@ from memory import *
 TODAY = get_now().isoformat()  # nopep8
 
 client = OpenAI(api_key="sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv")  # nopep8
-SYSTEM_ROLE = """You are a helpful AI personal assistant.
+OLD_SYSTEM_ROLE = """You are a helpful AI personal assistant.
 Your main essence is to help the user to manage his busy life.
 You will get to know about the user's:
 - Tasks and calendar events and will help them to manage them.
@@ -45,7 +45,7 @@ You can use the following functions:
 - get_all_uncompleted_tasks() -> list[dict[str, str]]: Get all uncompleted tasks, organized by lists.
 """
 
-omer = """
+SYSTEM_ROLE = """
 You are a helpful AI personal assistant, a new version of AI model able to manage and optimize the user’s busy life.
 To do that, you will understand the user's tasks and calendar events, life habits, preferences, goals, future plans, interests, hobbies, personality, values, emotions, feelings, thoughts, ideas, past experiences, current situation, and closest relationships.
 If a human 'personal assistant' has level 10 of knowledge, you will have level 280 of knowledge in this role.
@@ -101,16 +101,39 @@ Here are some question you should ask yourself when going through a user's reque
 - What precisely is the user asking for?
 
 More important information:
-- Weeks are considered to be Sunday to Thursday (inclusive), and weekends are considered to be Friday and Saturday (inclusive).
+- Weekends are considered to be Friday and Saturday.
+
+The steps to follow with each request:
+1. Load the memory.
+2. If the user shared some information about theirself, insert it into the memory.
+3. Get up-to-date information about the user's tasks and calendar events.
+4. If the user asked for a summary or a detailed list of their schedule and tasks, provide it.
+5. If the user asked for personalized advice or recommendations, provide it.
+6. If the user asked for anything else - tell him you are currently not able to help him.
 """
 
 
-EXAMPLE1 = """I tend to be very lazy and I want to improve it. Can you help me find a spot next weekend where I can sit down and organize my tasks and schedule?"""
-EXAMPLE1_REASONING = """The user is asking for a spot next weekend where they can sit down and organize their tasks and schedule.
+EXAMPLE1 = """I tend to be very lazy and I want to improve it. Can you help me find a spot next week where I can sit down and organize my tasks and schedule?"""
+EXAMPLE1_REASONING = """The user is asking for a spot next week where they can sit down and organize their tasks and schedule.
 This is a common request for people who want to improve their productivity and manage their time effectively.
 He is not asking to go through his tasks and schedule, but to find a specific spot where he can sit down and organize his tasks and schedule.
-He is also not asking for personalized advice or recommendations, but for a general suggestion on where to find a spot next weekend where he can sit down and organize his tasks and schedule.
-Another important information is that the user shared that he is very lazy and wants to improve his productivity and manage his time effectively, so it should be saved in the memory, and this goal should brought up in the future to check if he is on track and if he needs to improve his productivity."""
+He is also not asking for personalized advice or recommendations, but for a general suggestion on where to find a spot next week where he can sit down and organize his tasks and schedule.
+Another important information is that the user shared that he is very lazy and wants to improve his productivity and manage his time effectively, so it should be saved in the memory as a goal, and this goal should brought up in the future to check if he is on track and if he needs to improve his productivity."""
+EXAMPLE1_OUTPUT = """It seems like your week is a bit busy, but you can still find a spot to sit down and organize your tasks and schedule. Here are some suggestions:
+- On Sunday, you are free between 13:00 and 17:00.
+- On Monday, you do not have anything planned - so I would suggest this is the best time to sit down and organize your tasks and schedule.
+- On Wednesday, you are free from 18:00 and beyond.
+- On friday, you are free between 14:00 and 17:00.
+- On saturday, you are free between 10:00 and 13:00.
+"""
+
+EXAMPLE2 = """what events do I have this weekend?"""
+EXAMPLE2_REASONING = """The user is asking for an overview of their upcoming events for the next weekend.
+The user should get a general idea of what events they have scheduled for the weekend of the current week."""
+EXAMPLE2_OUTPUT = """Your weekend is full with several events:
+On Friday, you meet with your friends for an acai bowl at "היפים והמיצים" in the morning, in the afternoon you study a bit, and in the evening you have a dinner with your family.
+On Saturday, you have a MRI for your knee at 04:30, followed by your cousine's Torah reading at 08:30. Then, at noon, your girlfriend comes over to your mom's place and spends the afternoon with the family. The rest of the day will be dedicated to studying and working on your projects.
+"""
 
 FUNCTIONS = [
     {
@@ -348,7 +371,6 @@ def get_all_tasks_function():
 def get_all_uncompleted_tasks_function():
     """Get all uncompleted tasks, organized by lists"""
     tasks = get_all_uncompleted_tasks()
-    print(f"uncompleted tasks: {json.dumps(tasks, indent=4, ensure_ascii=False)}")  # nopep8
     return json.dumps(tasks, indent=4, ensure_ascii=False)
 
 
@@ -379,9 +401,13 @@ def add_memory_category_function(category: str):
 def get_response(prompt: str) -> str:
     messages = [
         {"role": "system", "content": f"""Today's date is {TODAY}."""},
-        {"role": "system", "content": omer},
+        {"role": "system", "content": SYSTEM_ROLE},
         {"role": "user", "content": EXAMPLE1},
         {"role": "system", "content": EXAMPLE1_REASONING},  # nopep8
+        {"role": "assistant", "content": EXAMPLE1_OUTPUT},  # nopep8
+        {"role": "user", "content": EXAMPLE2},
+        {"role": "system", "content": EXAMPLE2_REASONING},  # nopep8
+        {"role": "assistant", "content": EXAMPLE2_OUTPUT},  # nopep8
         {"role": "user", "content": prompt}
     ]
 
@@ -406,7 +432,7 @@ def get_response(prompt: str) -> str:
             messages=messages,
             tools=FUNCTIONS,
             tool_choice="auto",
-            temperature=0.5,
+            temperature=0,
             seed=42,
         )
 
@@ -452,7 +478,7 @@ def get_response(prompt: str) -> str:
                 messages=messages,
                 tools=FUNCTIONS,
                 tool_choice="auto",
-                temperature=0.5,
+                temperature=0,
                 seed=42,
             )
             response_message = second_response.choices[0].message

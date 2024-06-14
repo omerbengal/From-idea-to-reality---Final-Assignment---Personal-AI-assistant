@@ -27,7 +27,7 @@ def main():
 
         # print(events)
 
-        message = f"""Can you summarize my next week's calendar events for me?"""
+        message = f"""Hi, how are you?"""
         response = get_response(message)
         print(response)
 
