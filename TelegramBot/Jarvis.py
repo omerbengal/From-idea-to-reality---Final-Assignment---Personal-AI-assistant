@@ -6,7 +6,7 @@ import pandas as pd
 
 
 # Constants
-BOT_TOKEN = '<insert_bot_token_here>'
+BOT_TOKEN = '7031319241:AAFkaIQ9kXdO4BNuOJUVlleyt40JHr1kR14'
 
 
 # Commands
