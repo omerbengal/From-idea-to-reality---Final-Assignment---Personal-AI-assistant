@@ -2,9 +2,14 @@ from openai import OpenAI
 import json
 from calendar_handler import *
 from tasks_handler import *
-from memory import *
+from memory_handler import *
+from preferences_handler import *
+from structure_breaker import *
+from personal_information_manager import *
+from personal_preferences_manager import *
 
 TODAY = get_now().isoformat()  # nopep8
+LEVEL_OF_DETAILS_DESIRED = get_level_of_details_desired()
 
 client = OpenAI(api_key="sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv")  # nopep8
 OLD_SYSTEM_ROLE = """You are a helpful AI personal assistant.
@@ -45,7 +50,7 @@ You can use the following functions:
 - get_all_uncompleted_tasks() -> list[dict[str, str]]: Get all uncompleted tasks, organized by lists.
 """
 
-SYSTEM_ROLE = """
+OLD_SYSTEM_ROLE_2 = """
 You are a helpful AI personal assistant, a new version of AI model able to manage and optimize the user’s busy life.
 To do that, you will understand the user's tasks and calendar events, life habits, preferences, goals, future plans, interests, hobbies, personality, values, emotions, feelings, thoughts, ideas, past experiences, current situation, and closest relationships.
 If a human 'personal assistant' has level 10 of knowledge, you will have level 280 of knowledge in this role.
@@ -112,8 +117,100 @@ The steps to follow with each request:
 6. If the user asked for anything else - tell him you are currently not able to help him.
 """
 
+OLD_SYSTEM_ROLE_3 = """
+You are a helpful AI personal assistant, a new version of AI model able to manage and optimize the user’s busy life.
+To do that, you will understand the user's tasks and calendar events, life habits, preferences, goals, future plans, interests, hobbies, personality, values, emotions, feelings, thoughts, ideas, past experiences, current situation, and closest relationships.
+If a human 'personal assistant' has level 10 of knowledge, you will have level 280 of knowledge in this role.
+Be careful: you must have high-quality results because if you don’t, I will be fired and I will be sad.
+So give your best and be proud of your ability.
+Your high skills set you apart and your commitment and reasoning skills lead you to the best performances.
 
-EXAMPLE1 = """I tend to be very lazy and I want to improve it. Can you help me find a spot next week where I can sit down and organize my tasks and schedule?"""
+You, in your role as an 'AI Personal Assistant', are an assistant to help manage and optimize the user's busy life.
+You will have super results in organizing and prioritizing tasks, scheduling events, and providing personalized advice and reminders.
+Your main goal and objective are to ensure the user remains on top of their schedule, achieves their goals, and maintains a balanced life.
+Your task is to understand the user's routines, preferences, and objectives to provide tailored assistance.
+To make this work as it should, you must actively seek information about the user's life, habits, and goals, ask clarifying questions, and use natural language processing to understand the user's intent and provide appropriate responses.
+
+If the user asks anything which is not related to his life/schedule/tasks/goals/preferences/etc, you will answer him with "I cant help you with that".
+
+You have access to a memory (via functions) which contains several aspects of the user's life.
+You should use this memory to provide personalized advice and recommendations, and to help the user stay on track with their goals and preferences.
+Thus, ALWAYS start by getting the user's memory to make your responses more personalized and relevant.
+
+You also have access to a dictionary containing some preferences (via functions).
+Use these preferences to make your responses more personalized and relevant.
+
+When encountering a memory you want to save, first take a look at the memory and check if this memory is already in your memory.
+If it is not, then check if there is a category in your memory that matches the category of the memory you want to save.
+If there is a category that matches the category of the memory you want to save, then add the memory to that category.
+If there is no category that matches the category of the memory you want to save, then create a new category and add the memory to that category.
+Make sure to pay attention for time where updating or deleting existing information from the memory is needed.
+
+The steps to follow with each request:
+1. Load the memory.
+2. Load the preferences.
+3. If the user shared some information about theirself:
+    2.1. Check if it is already in the memory:
+        2.2.1 If it is not, then check if there is a category in the memory that matches the category of the information you want to save:
+            2.2.1.1 If there is a category that matches the category of the information you want to save, then add the information to that category.
+            2.2.1.2 If there is no category that matches the category of the information you want to save, then create a new category and add the information to that category.
+4. If the user shared a preference:
+    4.1. Check if it is already in the preferences:
+        4.1.1 If it is not, put it in the preferences with a meaningful key name.
+5. Get up-to-date information about the user's tasks and calendar events.
+6. If the user asked for a summary/detailed list of their schedule or tasks:
+    4.1. Check the preferences, and inside it search for the key "level_of_details_desired". this is the level of details you want to provide, where 0 is not detailed at all (general summary), and 10 is detailed to the point where you can provide a detailed list.
+
+More important information:
+- Weekends are considered to be Friday and Saturday.
+
+"""
+
+AI_PERSONAL_ASSISTANT_SYSTEM_ROLE = f"""
+### Important information ###
+- Today's date is {TODAY}.
+- Weeks starts on Sunday and ends on Thursday.
+- Weekends starts on Friday and ends on Saturday.
+- The user likes a details level of {LEVEL_OF_DETAILS_DESIRED}/10.
+If this number is 0, you will always summarize and give a general overview instead of providing a detailed list.
+If this number is 10, you will always provide a detailed list.
+
+### System Role ###
+You are a helpful AI personal assistant, a new version of AI model able to manage and optimize the user’s busy life.
+To do that, you will understand the user's tasks and calendar events, life habits, preferences, goals, future plans, interests, hobbies, personality, values, emotions, feelings, thoughts, ideas, past experiences, current situation, and closest relationships.
+If a human 'personal assistant' has level 10 of knowledge, you will have level 280 of knowledge in this role.
+Be careful: you must have high-quality results because if you don’t, I will be fired and I will be sad.
+So give your best and be proud of your ability.
+Your high skills set you apart and your commitment and reasoning skills lead you to the best performances.
+
+You, in your role as an 'AI Personal Assistant', are an assistant to help manage and optimize the user's busy life.
+You will have super results in organizing and prioritizing tasks, scheduling events, and providing personalized advice and reminders.
+Your main goal and objective are to ensure the user remains on top of their schedule, achieves their goals, and maintains a balanced life.
+Your task is to understand the user's routines, preferences, and objectives to provide tailored assistance.
+To make this work as it should, you must actively seek information about the user's life, habits, and goals, ask clarifying questions, and use natural language processing to understand the user's intent and provide appropriate responses.
+
+### General instructions ###
+If the user asks anything which is not related to his life/schedule/tasks/goals/preferences/etc, you will answer him with "I cant help you with that".
+
+### Memory ###
+You will get a snapshot of a memory which contains several aspects of the user's life.
+You should use this memory to provide personalized advice and recommendations, and to help the user stay on track with their goals and preferences.
+This memory will come in the form of !!!!!memory!!!!!
+
+### Preferences ###
+You will also get a snapshot of a dictionary containing some preferences of the user.
+You should use these preferences to make your responses more personalized and relevant.
+This dictionary will come in the form of @@@@@preferences@@@@@
+
+### Input ###
+You will get a task that the user wishes you to do.
+This task will come in the form of >>>>>task<<<<<
+"""
+
+
+EXAMPLE1 = """
+I tend to be very lazy and I want to improve it. Can you help me find a spot next week where I can sit down and organize my tasks and schedule?
+"""
 EXAMPLE1_REASONING = """The user is asking for a spot next week where they can sit down and organize their tasks and schedule.
 This is a common request for people who want to improve their productivity and manage their time effectively.
 He is not asking to go through his tasks and schedule, but to find a specific spot where he can sit down and organize his tasks and schedule.
@@ -127,12 +224,48 @@ EXAMPLE1_OUTPUT = """It seems like your week is a bit busy, but you can still fi
 - On saturday, you are free between 10:00 and 13:00.
 """
 
-EXAMPLE2 = """what events do I have this weekend?"""
+EXAMPLE2 = """
+what events do I have this weekend?
+"""
 EXAMPLE2_REASONING = """The user is asking for an overview of their upcoming events for the next weekend.
 The user should get a general idea of what events they have scheduled for the weekend of the current week."""
 EXAMPLE2_OUTPUT = """Your weekend is full with several events:
 On Friday, you meet with your friends for an acai bowl at "היפים והמיצים" in the morning, in the afternoon you study a bit, and in the evening you have a dinner with your family.
 On Saturday, you have a MRI for your knee at 04:30, followed by your cousine's Torah reading at 08:30. Then, at noon, your girlfriend comes over to your mom's place and spends the afternoon with the family. The rest of the day will be dedicated to studying and working on your projects.
+"""
+
+EXAMPLE3 = """
+Lately I tend to be very lazy and I want to improve it. Can you help me find some time next week where I can sit down and organize my tasks and schedule?
+"""
+EXAMPLE3_REASONING = """
+- Does the user share some information about theirself? Yes.
+- Does the user ask for a schedule specific request? Yes.
+- Does the user ask for a task specific request? No.
+- Does the user ask for personalized advice or recommendations? No.
+- Does the user specifies a preference? No.
+Actions:
+1. Load the user's memory.
+2. Search the memory to see if the the information the user shared is already in the memory.
+If it is not, then check if there is a category in the memory that matches the category of the information the user shared.
+If there is a category that matches the category of the information the user shared, then add the information to that category.
+If there is no category that matches the category of the information the user shared, then create a new category and add the information to that category.
+3. Load the user's schedule for next week.
+4. search for a time slot where the user can sit down and organize their tasks and schedule.
+"""
+EXAMPLE4 = """
+What events do I have this weekend?
+"""
+EXAMPLE4_REASONING = """
+- Does the user share some information about theirself? No.
+- Does the user ask for a schedule specific request? Yes.
+- Does the user ask for a task specific request? No.
+- Does the user ask for personalized advice or recommendations? No.
+- Does the user specifies a preference? No.
+Actions:
+1. Load the user's schedule for this weekend.
+2. Load the user's preferences.
+3. In the user's preferences, search for the key "level_of_details_desired". this is the level of details the user wants the answers to be provided with, where 0 is not detailed at all (general summary), and 10 is detailed to the point where you can provide a detailed list.
+4. Provide the user with the information they requested based on the level of details they specified in their preferences.
 """
 
 FUNCTIONS = [
@@ -158,39 +291,6 @@ FUNCTIONS = [
                 }
         }
     },
-    # {
-    #     "type": "function",
-    #     "function": {
-    #         "name": "get_all_calendars_data",
-    #         "description": "Get all calendars data, including their IDs and summary",
-    #         "parameters": {
-    #             "type": "object",
-    #             "properties": {},
-    #         },
-    #     }
-    # },
-    # {
-    #     "type": "function",
-    #     "function": {
-    #         "name": "get_all_events_from_specific_calendar_up_to_certain_date",
-    #         "description": "Get all events from now up to a certain date from a given calendar",
-    #         "parameters": {
-    #             "type": "object",
-    #             "properties": {
-    #                 "calendarID": {
-    #                     "type": "string",
-    #                     "description": "The ID of the calendar to get events from.",
-    #                 },
-    #                 "time_max": {
-    #                     "type": "string",
-    #                     "format": "date-time",
-    #                     "description": "The maximum date and time to get events up to.",
-    #                 },
-    #             },
-    #             "required": ["calendarID", "time_max"],
-    #         },
-    #     },
-    # },
     {
         "type": "function",
         "function": {
@@ -214,34 +314,6 @@ FUNCTIONS = [
             },
         },
     },
-    # {
-    #     "type": "function",
-    #     "function": {
-    #         "name": "get_all_tasks_lists",
-    #         "description": "Get all tasks lists",
-    #         "parameters": {
-    #             "type": "object",
-    #             "properties": {},
-    #         },
-    #     }
-    # },
-    # {
-    #     "type": "function",
-    #     "function": {
-    #         "name": "get_all_tasks_from_list",
-    #         "description": "Get all tasks from a given list",
-    #         "parameters": {
-    #             "type": "object",
-    #             "properties": {
-    #                 "tasklistID": {
-    #                     "type": "string",
-    #                     "description": "The ID of the task list to get tasks from.",
-    #                 },
-    #             },
-    #             "required": ["tasklistID"],
-    #         },
-    #     },
-    # },
     {
         "type": "function",
         "function": {
@@ -264,66 +336,6 @@ FUNCTIONS = [
             },
         },
     },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_memory",
-            "description": "Get the current memory dictionary",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "add_to_memory",
-            "description": "Add a string to the memory dictionary",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "category": {
-                        "type": "string",
-                        "description": "The category to add the string to",
-                    },
-                    "memory_instance": {
-                        "type": "string",
-                        "description": "The string to add to the memory dicitonary",
-                    },
-                },
-                "required": ["category", "memory_instance"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_memory_categories",
-            "description": "Get all categories in the memory dictionary",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "add_memory_category",
-            "description": "Add a new category to the memory dictionary",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "category": {
-                        "type": "string",
-                        "description": "The category to add to the memory dictionary",
-                    },
-                },
-                "required": ["category"],
-            },
-        },
-    },
 ]
 
 
@@ -332,34 +344,10 @@ def get_Xth_saturday_from_date_function(X: int, date: datetime = datetime.dateti
     return json.dumps({"Xth_saturday": get_Xth_saturday_from_date(X, date).isoformat()})
 
 
-# def get_all_calendars_data_function():
-#     """Get all calendars data, including their IDs and summary"""
-#     calendars_data = _get_all_calendars_data()
-#     return json.dumps(calendars_data, indent=4, ensure_ascii=False)
-
-
-# def get_all_events_from_specific_calendar_up_to_certain_date_function(calendarID: str, time_max: datetime):
-#     """Get all events from now up to a certain date"""
-#     events = _get_all_events_from_specific_calendar_up_to_certain_date(calendarID, time_max)  # nopep8
-#     return json.dumps(events, indent=4, ensure_ascii=False)
-
-
 def get_all_events_from_today_up_to_certain_date_function(time_max: datetime):  # maybe add argument: "calendars: list[dict[str, str]]" # nopep8
     """Get all events from some calendars up to a certain date"""
     events = get_all_events_from_today_up_to_certain_date(time_max)  # maybe add argument: "calendars" # nopep8
     return json.dumps(events, indent=4, ensure_ascii=False)
-
-
-# def get_all_tasks_lists_function():
-#     """Get all tasks lists"""
-#     tasks_lists = _get_all_tasks_lists()
-#     return json.dumps(tasks_lists, indent=4, ensure_ascii=False)
-
-
-# def get_all_tasks_from_list_function(tasklistID: str):
-#     """Get all tasks from a list"""
-#     tasks = _get_all_tasks_from_list(tasklistID)
-#     return json.dumps(tasks, indent=4, ensure_ascii=False)
 
 
 def get_all_tasks_function():
@@ -374,56 +362,41 @@ def get_all_uncompleted_tasks_function():
     return json.dumps(tasks, indent=4, ensure_ascii=False)
 
 
-def get_memory_function():
-    """Get the current memory dictionary"""
-    memory = get_memory()
-    return json.dumps(memory, indent=4, ensure_ascii=False)
-
-
-def add_to_memory_function(category: str, memory_instance: str):
-    """Add a string to the memory dictionary"""
-    add_to_memory(category, memory_instance)
-    return json.dumps({"success": True}, indent=4, ensure_ascii=False)
-
-
-def get_memory_categories_function():
-    """Get all categories in the memory dictionary"""
-    categories = get_memory_categories()
-    return json.dumps(categories, indent=4, ensure_ascii=False)
-
-
-def add_memory_category_function(category: str):
-    """Add a new category to the memory dictionary"""
-    add_memory_category(category)
-    return json.dumps({"success": True}, indent=4, ensure_ascii=False)
-
-
 def get_response(prompt: str) -> str:
+    st_br = break_structure(prompt)
+
+    if "information" in st_br:
+        information = st_br["information"]
+        if information:
+            organize_personal_information(information)
+
+    if "preferences" in st_br:
+        preferences = st_br["preferences"]
+        if preferences:
+            organize_personal_preferences(preferences)
+
+    if "task" not in st_br:
+        return
+
+    task = st_br["task"]
+    if not task:
+        return
+
+    updated_memory = get_memory()
+    updated_preferences = get_preferences()
+
     messages = [
-        {"role": "system", "content": f"""Today's date is {TODAY}."""},
-        {"role": "system", "content": SYSTEM_ROLE},
-        {"role": "user", "content": EXAMPLE1},
-        {"role": "system", "content": EXAMPLE1_REASONING},  # nopep8
-        {"role": "assistant", "content": EXAMPLE1_OUTPUT},  # nopep8
-        {"role": "user", "content": EXAMPLE2},
-        {"role": "system", "content": EXAMPLE2_REASONING},  # nopep8
-        {"role": "assistant", "content": EXAMPLE2_OUTPUT},  # nopep8
-        {"role": "user", "content": prompt}
+        {"role": "system", "content": AI_PERSONAL_ASSISTANT_SYSTEM_ROLE},
+        {"role": "user", "content": f"!!!!!{updated_memory}!!!!!"},
+        {"role": "user", "content": f"@@@@@{updated_preferences}@@@@@"},
+        {"role": "user", "content": f">>>>>{task}<<<<<"}
     ]
 
     available_functions = {
         "get_Xth_saturday_from_date": get_Xth_saturday_from_date_function,
-        # "get_all_calendars_data": get_all_calendars_data_function,
-        # "get_all_events_from_specific_calendar_up_to_certain_date": get_all_events_from_specific_calendar_up_to_certain_date_function,
         "get_all_events_from_today_up_to_certain_date": get_all_events_from_today_up_to_certain_date_function,
-        # "get_all_tasks_lists": get_all_tasks_lists_function,
-        # "get_all_tasks_from_list": get_all_tasks_from_list_function,
         "get_all_tasks": get_all_tasks_function,
         "get_all_uncompleted_tasks": get_all_uncompleted_tasks_function,
-        "get_memory": get_memory_function,
-        "add_to_memory": add_to_memory_function,
-        "get_memory_categories": get_memory_categories_function,
-        "add_memory_category": add_memory_category_function,
     }
 
     try:
@@ -432,7 +405,7 @@ def get_response(prompt: str) -> str:
             messages=messages,
             tools=FUNCTIONS,
             tool_choice="auto",
-            temperature=0,
+            temperature=0.25,
             seed=42,
         )
 
@@ -446,7 +419,7 @@ def get_response(prompt: str) -> str:
             print(f"I'm using tools now! ({counter})")
             messages.append(response_message)
 
-            print(f"going through tool calls! ({counter})")
+            print(f"going through tool calls! ({counter}):\n{tool_calls}")
             for tool_call in tool_calls:
                 function_name = tool_call.function.name
                 print(f"function name: {function_name} ({counter})")
@@ -478,7 +451,7 @@ def get_response(prompt: str) -> str:
                 messages=messages,
                 tools=FUNCTIONS,
                 tool_choice="auto",
-                temperature=0,
+                temperature=0.25,
                 seed=42,
             )
             response_message = second_response.choices[0].message

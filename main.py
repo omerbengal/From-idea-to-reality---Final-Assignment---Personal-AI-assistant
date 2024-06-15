@@ -3,7 +3,8 @@ import setup
 from calendar_handler import *
 from tasks_handler import *
 from openAI import *
-from memory import *
+from memory_handler import *
+from structure_breaker import *
 
 
 def main():
@@ -27,9 +28,14 @@ def main():
 
         # print(events)
 
-        message = f"""Hi, how are you?"""
+        # message = f"""My best friend Shaked is getting married next Tuesday. The wedding starts at 18:00. What will I be missing?"""
+        message = f"""What is the best way to learn a new language?
+"""
         response = get_response(message)
         print(response)
+
+        # structure_breaker = break_structure(message)
+        # print(structure_breaker)
 
     except HttpError as error:
         print(f"An error occurred: {error}")
