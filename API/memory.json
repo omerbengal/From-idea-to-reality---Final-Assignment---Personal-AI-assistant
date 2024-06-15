@@ -1,13 +1,15 @@
 {
-    "Personal details": {},
+    "Personal details": {
+        "2024-06-15T18:58:24.123992+00:00": "The user's name is oogabooga.",
+        "2024-06-15T19:01:10.873097+00:00": "User's new name is Udi."
+    },
     "Life Goals": {},
-    "Hobbies": {},
-    "Interests": {},
+    "Interests And Hobbies": {},
     "Life Habits": {},
-    "Past Experiences": {},
-    "Relationships": {},
+    "Relationships": {
+        "2024-06-15T18:57:12.217958+00:00": "User has an old friend named Archimedes."
+    },
     "Values": {},
     "Emotions": {},
-    "Thoughts": {},
-    "Ideas": {}
+    "Ideas And Thoughts": {}
 }

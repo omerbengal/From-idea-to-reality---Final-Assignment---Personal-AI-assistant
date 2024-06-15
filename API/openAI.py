@@ -170,8 +170,8 @@ AI_PERSONAL_ASSISTANT_SYSTEM_ROLE = f"""
 ### Important information ###
 - Date format is "DD/MM/YYYY".
 - Today's date is {TODAY}.
-- Weeks starts on Sunday and ends on Thursday.
-- Weekends starts on Friday and ends on Saturday.
+- Weeks start on Sunday and end on Thursday.
+- Weekends start on Friday and end on Saturday.
 - The user likes a details level of {LEVEL_OF_DETAILS_DESIRED}/10.
 This is a number between 0 and 10, where 0 is not detailed at all (general summary), and 10 is detailed to the point where you can provide a detailed list.
 
@@ -208,6 +208,7 @@ This dictionary will come in the form of @@@@@preferences@@@@@
 ### Task ###
 You will get a task that the user wishes you to do.
 This task will come in the form of >>>>>task<<<<<
+If the task is an empty string, then just answer nicely according to the user's prompt.
 """
 
 
@@ -382,16 +383,16 @@ def get_response(prompt: str) -> str:
         return
 
     task = st_br["task"]
-    if not task:
-        return
+    # if not task:
+    #     return
 
     updated_memory = get_memory()
     updated_preferences = get_preferences()
 
     messages = [
         {"role": "system", "content": AI_PERSONAL_ASSISTANT_SYSTEM_ROLE},
-        {"role": "user", "content": f"!!!!!{updated_memory}!!!!!"},
-        {"role": "user", "content": f"@@@@@{updated_preferences}@@@@@"},
+        {"role": "system", "content": f"!!!!!{updated_memory}!!!!!"},
+        {"role": "system", "content": f"@@@@@{updated_preferences}@@@@@"},
         {"role": "user", "content": f">>>>>{task}<<<<<"}
     ]
 

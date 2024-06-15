@@ -24,6 +24,7 @@ Your task is to analyze the list and insert each information item in the best su
 - Make sure to only use double quotes.
 - You must never alter the content provided to you, but you can rephrase it a bit to make it more readable.
 - The insformation list should contain only personal information of the user, and not temporary information related to the specific task the user requested.
+- If a piece of information (or a part of it) already exists in the memory, do not add it again, but instead update the existing information.
 """
 
 

@@ -1,10 +1,41 @@
 from googleapiclient.errors import HttpError
-import setup
+from urllib.parse import unquote
 from calendar_handler import *
 from tasks_handler import *
 from openAI import *
 from memory_handler import *
 from structure_breaker import *
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+
+# FastAPI setup
+app = FastAPI()
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    # Allows all methods, including GET, POST, PUT, DELETE, etc.
+    allow_methods=["*"],
+    allow_headers=["*"],  # Allows all headers
+)
+
+
+# FastAPI routes
+@app.get("/Jarvis")
+def get_response_from_Jarvis(request: str) -> str:
+    try:
+        # url decode the request
+        request = request.replace("%20", " ")
+        request = unquote(request)
+
+        # get the request
+        response = get_response(request)
+        print(response)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def main():

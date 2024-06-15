@@ -1,4 +1,5 @@
 from typing import Final
+import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import os
@@ -28,10 +29,16 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+def remove_escape_characters(text: str) -> str:
+    return text.replace('\\n', '\n').replace('\\t', '\t').replace('\\\\', '\\').replace('\\"', '"')
+
+
 # Responses
 def handle_response(text: str) -> str:
-    # do some things and return a string
-    pass
+    response = requests.get(f"http://127.0.0.1:8000/Jarvis?request={text}")
+    response_text = remove_escape_characters(response.text).strip('"')  # nopep8
+    print(response_text)
+    return response_text
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -40,7 +47,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # print(f'User ({update.message.chat.id}) in {message_type}: "{text}"')
     if message_type == 'private':
         response = handle_response(text)
-        # print('Bot: ', response)
         await update.message.reply_text(response)
 
 
