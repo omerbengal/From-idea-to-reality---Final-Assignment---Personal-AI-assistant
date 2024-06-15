@@ -29,8 +29,7 @@ def main():
         # print(events)
 
         # message = f"""My best friend Shaked is getting married next Tuesday. The wedding starts at 18:00. What will I be missing?"""
-        message = f"""What is the best way to learn a new language?
-"""
+        message = f"""---"""
         response = get_response(message)
         print(response)
 
