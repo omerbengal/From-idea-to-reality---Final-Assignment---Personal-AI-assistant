@@ -1,14 +1,26 @@
 from openai import OpenAI
+from calendar_handler import *
 from memory_handler import *
 
 
+TODAY = get_now().isoformat()  # nopep8
+
+
 client = OpenAI(api_key="sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv")  # nopep8
-PERSONAL_INFORMATION_MANAGER_SYSTEM_ROLE = """
+PERSONAL_INFORMATION_MANAGER_SYSTEM_ROLE = f"""
+### Important information ###
+- Date format is "DD/MM/YYYY".
+- Today's date is {TODAY}.
+- Weeks starts on Sunday and ends on Thursday.
+- Weekends starts on Friday and ends on Saturday.
+
+### System Role ###
 You are an expert details analyzer.
 You will act as a middleman between a user and an AI personal assistant.
 You will get a list of personal information about the user's life - this list will come in the form of >>>>>list<<<<<.
 Your task is to analyze the list and insert each information item in the best suitable category in the memory if it is not already there.
-You must never alter the information provided to you.
+You must never alter the content provided to you, but you can rephrase it a bit to make it more readable.
+Make sure to only use double quotes.
 """
 
 

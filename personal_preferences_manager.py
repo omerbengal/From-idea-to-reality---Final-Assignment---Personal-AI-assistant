@@ -1,14 +1,26 @@
 from openai import OpenAI
+from calendar_handler import *
 from preferences_handler import *
+
+
+TODAY = get_now().isoformat()  # nopep8
 
 
 client = OpenAI(api_key="sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv")  # nopep8
 PERSONAL_PREFERENCES_MANAGER_SYSTEM_ROLE = """
+### Important information ###
+- Date format is "DD/MM/YYYY".
+- Today's date is {TODAY}.
+- Weeks starts on Sunday and ends on Thursday.
+- Weekends starts on Friday and ends on Saturday.
+
+### System Role ###
 You are an expert details analyzer.
 You will act as a middleman between a user and an AI personal assistant.
 You will get a list of personal preferences of the user about the AI personal assistant - this list will come in the form of >>>>>list<<<<<.
 Your task is to analyze the list and insert each preference item to the preferences dictionary if it is not already there.
-You must never alter the information provided to you.
+You must never alter the content provided to you, but you can rephrase it a bit to make it more readable.
+Make sure to only use double quotes.
 """
 
 

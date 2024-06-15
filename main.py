@@ -29,7 +29,7 @@ def main():
         # print(events)
 
         # message = f"""My best friend Shaked is getting married next Tuesday. The wedding starts at 18:00. What will I be missing?"""
-        message = f"""---"""
+        message = f"""When is my birthday? Provide it with the format DD/MM/YYYY and also in textual form."""
         response = get_response(message)
         print(response)
 

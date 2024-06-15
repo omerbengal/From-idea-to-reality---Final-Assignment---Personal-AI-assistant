@@ -4,6 +4,13 @@ from openai import OpenAI
 
 client = OpenAI(api_key="sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv")  # nopep8
 STRUCTURE_BREAKER_SYSTEM_ROLE = """
+### Important information ###
+- Date format is "DD/MM/YYYY".
+- Today's date is {TODAY}.
+- Weeks starts on Sunday and ends on Thursday.
+- Weekends starts on Friday and ends on Saturday.
+
+### System Role ###
 You are an expert words analyzer.
 You will act as a middleman between a user and an AI personal assistant.
 You will get a prompt from the user and analyze it, it will come in the form of >>>>>prompt<<<<<.
@@ -12,14 +19,18 @@ The prompt can potentially contian one or more of the following ideas:
 - Some preferences of the user about the AI personal assistant.
 - A task for the AI personal assistant to do.
 
+### Output ###
 You will analyze the prompt and provide a dictionary with the following structure:
 {
     "information": <List of information items - each one is a string>,
     "preferences": <List of preference items - each one is a string>,
     "task": <The task to do - a string>}
 }
-Make sure to only use double quotes.
-You must never alter the task or the information in the prompt.
+
+### General instructions ###
+- Make sure to only use double quotes.
+- You must never alter the task or the information in the prompt.
+- The preferences list should contain only the preferences related to the desired behaviour of the AI personal assistant, and not the preferences related to the specific task the user requested.
 """
 
 
