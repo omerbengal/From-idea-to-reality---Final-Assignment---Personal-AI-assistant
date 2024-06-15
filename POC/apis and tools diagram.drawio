@@ -1,0 +1,59 @@
+<mxfile host="app.diagrams.net" modified="2024-06-15T20:54:03.694Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" etag="Xm2Zt6f5po3XS1jfw-RZ" version="24.2.3" type="device">
+  <diagram name="Page-1" id="yLFzM5PTNUsATmNugmUK">
+    <mxGraphModel dx="1862" dy="1774" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-19" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="UWrL3u-_WZ3EnCA1IIQQ-2" target="UWrL3u-_WZ3EnCA1IIQQ-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-20" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.716;entryY=0.041;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="UWrL3u-_WZ3EnCA1IIQQ-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="836" y="553" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-21" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="UWrL3u-_WZ3EnCA1IIQQ-2" target="UWrL3u-_WZ3EnCA1IIQQ-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-22" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" target="UWrL3u-_WZ3EnCA1IIQQ-5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="863" y="544" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-23" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="UWrL3u-_WZ3EnCA1IIQQ-2" target="UWrL3u-_WZ3EnCA1IIQQ-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-2" value="Telegram Bot" style="ellipse;whiteSpace=wrap;html=1;fontFamily=Rubik;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DRubik;fontSize=24;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;gradientColor=#7ea6e0;" vertex="1" parent="1">
+          <mxGeometry x="750" y="455" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-3" value="FastAPI" style="ellipse;whiteSpace=wrap;html=1;fontFamily=Rubik;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DRubik;fontSize=24;strokeWidth=2;fillColor=#e6d0de;strokeColor=#996185;fontStyle=1;gradientColor=#d5739d;" vertex="1" parent="1">
+          <mxGeometry x="790" y="145" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-4" value="Google Calendar API" style="ellipse;whiteSpace=wrap;html=1;fontFamily=Rubik;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DRubik;fontSize=24;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;gradientColor=#ffd966;" vertex="1" parent="1">
+          <mxGeometry x="405" y="815" width="260" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-5" value="OpenAI Whisper API" style="ellipse;whiteSpace=wrap;html=1;fontFamily=Rubik;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DRubik;fontSize=24;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;gradientColor=#97d077;" vertex="1" parent="1">
+          <mxGeometry x="1035" y="825" width="255" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-6" value="OpenAI ChatGPT 4o API" style="ellipse;whiteSpace=wrap;html=1;fontFamily=Rubik;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DRubik;fontSize=24;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;gradientColor=#97d077;" vertex="1" parent="1">
+          <mxGeometry x="700" y="815" width="300" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-7" value="Google Tasks API" style="ellipse;whiteSpace=wrap;html=1;fontFamily=Rubik;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DRubik;fontSize=24;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;gradientColor=#ffd966;" vertex="1" parent="1">
+          <mxGeometry x="110" y="830" width="260" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-9" value="&lt;b&gt;Database&lt;/b&gt;&lt;div&gt;(Firebase / SQLite)&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;fontFamily=Rubik;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DRubik;fontSize=24;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;gradientColor=#ea6b66;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="825" width="270" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-17" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="UWrL3u-_WZ3EnCA1IIQQ-10" target="UWrL3u-_WZ3EnCA1IIQQ-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-18" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="UWrL3u-_WZ3EnCA1IIQQ-10" target="UWrL3u-_WZ3EnCA1IIQQ-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="UWrL3u-_WZ3EnCA1IIQQ-10" value="&lt;b&gt;Server&lt;/b&gt;&lt;div&gt;(pythonanywhere)&lt;br&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;fontFamily=Rubik;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DRubik;fontSize=24;strokeWidth=2;fillColor=#f5f5f5;strokeColor=#666666;gradientColor=#b3b3b3;" vertex="1" parent="1">
+          <mxGeometry x="690" y="275" width="320" height="120" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
