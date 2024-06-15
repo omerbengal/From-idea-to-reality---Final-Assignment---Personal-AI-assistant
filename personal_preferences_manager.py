@@ -19,8 +19,10 @@ You are an expert details analyzer.
 You will act as a middleman between a user and an AI personal assistant.
 You will get a list of personal preferences of the user about the AI personal assistant - this list will come in the form of >>>>>list<<<<<.
 Your task is to analyze the list and insert each preference item to the preferences dictionary if it is not already there.
-You must never alter the content provided to you, but you can rephrase it a bit to make it more readable.
-Make sure to only use double quotes.
+
+### General instructions ###
+- Make sure to only use double quotes.
+- You must never alter the content provided to you, but you can rephrase it a bit to make it more readable.
 """
 
 

@@ -29,7 +29,9 @@ def main():
         # print(events)
 
         # message = f"""My best friend Shaked is getting married next Tuesday. The wedding starts at 18:00. What will I be missing?"""
-        message = f"""When is my birthday? Provide it with the format DD/MM/YYYY and also in textual form."""
+        message = f"""I want to plan a full weekend trip for me and my girlfriend Amit.
+        Can you find me the next free of events weekend in my calendar?
+        """
         response = get_response(message)
         print(response)
 
