@@ -1,4 +1,4 @@
-Personal details - Information about the user's life, such as their name, age, gender, and occupation.
+Personal details - Information about the user's life, such as their name, age, gender, and occupation. The information in this category should only be about the user himself, not about his friends or any other person.
 Life Goals - Objectives that the user wants to achieve in their life.
 Interests And Hobbies - Activities and life interests that the user enjoys.
 Life Habits - Habits and routines that the user follows.

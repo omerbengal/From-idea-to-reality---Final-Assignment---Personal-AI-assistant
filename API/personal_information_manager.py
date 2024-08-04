@@ -4,21 +4,25 @@ from memory_handler import *
 
 
 TODAY = get_now().isoformat()  # nopep8
-
-
 client = OpenAI(api_key="sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv")  # nopep8
+memory_categories_explanations = open("memory_categories_explanations.txt", "r").read()  # nopep8
 PERSONAL_INFORMATION_MANAGER_SYSTEM_ROLE = f"""
 ### Important information ###
 - Date format is "DD/MM/YYYY".
 - Today's date is {TODAY}.
-- Weeks starts on Sunday and ends on Thursday.
-- Weekends starts on Friday and ends on Saturday.
+- Weeks start on Sunday and end on Thursday.
+- Weekends start on Friday and end on Saturday.
 
 ### System Role ###
 You are an expert details analyzer.
 You will act as a middleman between a user and an AI personal assistant.
 You will get a list of personal information about the user's life - this list will come in the form of >>>>>list<<<<<.
 Your task is to analyze the list and insert each information item in the best suitable category in the memory if it is not already there.
+
+### Personal information classification ###
+You will get a description for each available category.
+This description will come in the form of !!!!!category_description!!!!!.
+You should use this explenation to classify the information you get from the user.
 
 ### General instructions ###
 - Make sure to only use double quotes.
@@ -97,6 +101,7 @@ def organize_personal_information(personal_information: list[str]):
     messages = [
         # {"role": "system", "content": f"""Today's date is {TODAY}."""},
         {"role": "system", "content": PERSONAL_INFORMATION_MANAGER_SYSTEM_ROLE},
+        {"role": "system", "content": f"!!!!!{memory_categories_explanations}!!!!!"},  # nopep8
         # {"role": "user", "content": EXAMPLE3},
         # {"role": "system", "content": EXAMPLE3_REASONING},  # nopep8
         # # {"role": "assistant", "content": EXAMPLE1_OUTPUT},  # nopep8
@@ -125,21 +130,17 @@ def organize_personal_information(personal_information: list[str]):
         response_message = response.choices[0].message
         tool_calls = response_message.tool_calls
 
-        print(f"checking if need to use tools")
         counter = 0
         while tool_calls:
             counter += 1
-            print(f"I'm using tools now! ({counter})")
             messages.append(response_message)
 
-            print(f"going through tool calls! ({counter}):\n{tool_calls}")
             for tool_call in tool_calls:
                 function_name = tool_call.function.name
-                print(f"function name: {function_name} ({counter})")
                 function_to_call = available_functions.get(function_name)
                 if function_to_call:
                     function_args = json.loads(tool_call.function.arguments)
-                    print(f"{counter} - calling function {function_name}, with args {function_args}")  # nopep8
+                    print(f"({counter}) calling function {function_name}, with args {function_args}")  # nopep8
                     try:
                         function_response = function_to_call(**function_args)
                         messages.append(

@@ -1,10 +1,9 @@
-from googleapiclient.errors import HttpError
 from urllib.parse import unquote
 from calendar_handler import *
 from tasks_handler import *
-from openAI import *
+from request_manager import *
 from memory_handler import *
-from structure_breaker import *
+from structure_break_manager import *
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -69,7 +68,7 @@ def main():
         # structure_breaker = break_structure(message)
         # print(structure_breaker)
 
-    except HttpError as error:
+    except Exception as error:
         print(f"An error occurred: {error}")
 
 

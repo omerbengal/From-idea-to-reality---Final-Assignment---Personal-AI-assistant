@@ -1,9 +1,6 @@
-from typing import Final
 import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-import os
-import pandas as pd
 
 
 # Constants
@@ -11,21 +8,9 @@ BOT_TOKEN = '7031319241:AAFkaIQ9kXdO4BNuOJUVlleyt40JHr1kR14'
 
 
 # Commands
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        'בשביל לבדוק זכאות של חייל מילואים לאירוע מסוים, אנא שלח/י הודעה בפורמט הבא:\n\n'
-        '<שם אירוע>\n<פרט מזהה>\n\n'
-        'דגשים:\n'
-        'שם האירוע נדרש להיות זהה לזה שמופיע ברשימת אירועים (מוזמנים להריץ את הפקודה "/events" לקבלת רשימה של האירועים הקיימים\n)'
-        'פרט מזהה הינו אחד מכמה אפשרויות:\n'
-        '1. תעודת הזהות של משרת המילואים (בפורמט 9 ספרות)\n'
-        '2. מספר הטלפון של משרת המילואים (בפורמט 10 ספרות עם מקף אחרי 3 הספרות הראשונות)\n'
-        '3. מספר הטלפון של בת הזוג של משרת המילואים (בפורמט 10 ספרות עם מקף אחרי 3 הספרות הראשונות)\n\n'
-        'דוגמה:\n'
-        'פסח שוברים\n207827825\n\n'
-        'דוגמה נוספת:\n'
-        'שי ליולדת\n054-8111733\n\n'
-        'לעזרה נוספת - ניתן לפנות לעומר בנגל: 054-8111733'
+        'Hello, I am Jarvis, your personal assistant. I can help you with a variety of tasks and answer your questions. What can I do for you?'
     )
 
 
@@ -62,7 +47,7 @@ if __name__ == '__main__':
     app = Application.builder().token(BOT_TOKEN).build()
 
     # Commands
-    app.add_handler(CommandHandler('help', help_command))
+    app.add_handler(CommandHandler('start', start_command))
 
     # Messages
     app.add_handler(MessageHandler(filters.TEXT, handle_message))

@@ -11,8 +11,8 @@ PERSONAL_PREFERENCES_MANAGER_SYSTEM_ROLE = """
 ### Important information ###
 - Date format is "DD/MM/YYYY".
 - Today's date is {TODAY}.
-- Weeks starts on Sunday and ends on Thursday.
-- Weekends starts on Friday and ends on Saturday.
+- Weeks start on Sunday and end on Thursday.
+- Weekends start on Friday and end on Saturday.
 
 ### System Role ###
 You are an expert details analyzer.
@@ -101,21 +101,17 @@ def organize_personal_preferences(personal_preferences: list[str]):
         response_message = response.choices[0].message
         tool_calls = response_message.tool_calls
 
-        print(f"checking if need to use tools")
         counter = 0
         while tool_calls:
             counter += 1
-            print(f"I'm using tools now! ({counter})")
             messages.append(response_message)
 
-            print(f"going through tool calls! ({counter}):\n{tool_calls}")
             for tool_call in tool_calls:
                 function_name = tool_call.function.name
-                print(f"function name: {function_name} ({counter})")
                 function_to_call = available_functions.get(function_name)
                 if function_to_call:
                     function_args = json.loads(tool_call.function.arguments)
-                    print(f"{counter} - calling function {function_name}, with args {function_args}")  # nopep8
+                    print(f"({counter}) calling function {function_name}, with args {function_args}")  # nopep8
                     try:
                         function_response = function_to_call(**function_args)
                         messages.append(
