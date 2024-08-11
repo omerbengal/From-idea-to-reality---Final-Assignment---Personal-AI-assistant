@@ -1,0 +1,20 @@
+from PIL import Image, ImageDraw, ImageFont
+
+# Load the image (card background)
+image = Image.open('background.png')
+
+# Create an ImageDraw object to draw on the image
+draw = ImageDraw.Draw(image)
+
+# Choose a font and size
+font = ImageFont.truetype("arial.ttf", 50)
+
+# Define the text and its position
+text = "Happy Birthday!"
+position = (100, 100)
+
+# Add text to image
+draw.text(position, text, font=font, fill="white")
+
+# Save the image
+image.save('birthday_card.png')
