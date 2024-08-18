@@ -1,20 +1,23 @@
 from PIL import Image, ImageDraw, ImageFont
+import random
 
-# Load the image (card background)
-image = Image.open('background.png')
+# Load a random image
+images = ['BirthdayCardGenerator/Blue.jpg', 'BirthdayCardGenerator/Green.jpg', 'BirthdayCardGenerator/Orange.jpg',
+          'BirthdayCardGenerator/Pink.jpg', 'BirthdayCardGenerator/Purple.jpg', 'BirthdayCardGenerator/Red.jpg', 'BirthdayCardGenerator/LightBlue.jpg']
+image = Image.open(random.choice(images))
 
 # Create an ImageDraw object to draw on the image
 draw = ImageDraw.Draw(image)
 
 # Choose a font and size
-font = ImageFont.truetype("arial.ttf", 50)
+font = ImageFont.load_default()
 
 # Define the text and its position
 text = "Happy Birthday!"
-position = (100, 100)
+position = (500, 500)
 
 # Add text to image
 draw.text(position, text, font=font, fill="white")
 
 # Save the image
-image.save('birthday_card.png')
+image.save('BirthdayCardGenerator/birthday_card.png')
