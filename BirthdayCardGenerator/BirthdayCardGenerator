@@ -9,12 +9,27 @@ image = Image.open(random.choice(images))
 # Create an ImageDraw object to draw on the image
 draw = ImageDraw.Draw(image)
 
-# Choose a font and size
-font = ImageFont.load_default()
+# Specify the path to your Rubik font file
+# Make sure to use the correct path and filename
+font_path = "BirthdayCardGenerator/Rubik-VariableFont_wght.ttf"
+font_size = 200  # Adjust this value to make the font larger or smaller
+
+# Load the Rubik font
+font = ImageFont.truetype(font_path, font_size)
 
 # Define the text and its position
 text = "Happy Birthday!"
-position = (500, 500)
+
+# Get the size of the image
+img_width, img_height = image.size
+
+# Get the size of the text
+text_bbox = draw.textbbox((0, 0), text, font=font)
+text_width = text_bbox[2] - text_bbox[0]
+text_height = text_bbox[3] - text_bbox[1]
+
+# Calculate the position to center the text
+position = ((img_width - text_width) // 2, (img_height - text_height) // 2)
 
 # Add text to image
 draw.text(position, text, font=font, fill="white")
