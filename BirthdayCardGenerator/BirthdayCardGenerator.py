@@ -119,21 +119,25 @@ from PIL import Image, ImageDraw, ImageFont
 import random
 import numpy as np
 from moviepy.editor import ImageSequenceClip
+import requests
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
 
-def create_confetti(width, height, num_particles):
+def create_confetti(width: int, height: int, num_particles: int) -> list[tuple[int, int, int, tuple[int, int, int]]]:
     confetti = []
     for _ in range(num_particles):
         x = random.randint(0, width)
         y = random.randint(0, height)
-        size = random.randint(5, 15)
+        size = random.randint(10, 30)
         color = (random.randint(0, 255), random.randint(
             0, 255), random.randint(0, 255))
         confetti.append((x, y, size, color))
     return confetti
 
 
-def create_frame(base_image, confetti, frame_number):
+def create_frame(base_image: Image, confetti: list, frame_number: int) -> np.ndarray:
     frame = base_image.copy()
     draw = ImageDraw.Draw(frame)
 
