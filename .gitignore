@@ -1,2 +1,8 @@
 **/token.json
 **/__pycache__/**
+*.mp4
+*.mov
+*.pptx
+*.docx
+*.xlsx
+.idea/
