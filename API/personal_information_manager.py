@@ -1,4 +1,6 @@
 from openai import OpenAI
+
+from API.open_ai_singleton import OpenAISingleton
 from calendar_handler import *
 from memory_handler import *
 
@@ -22,7 +24,7 @@ Your task is to analyze the list and insert each information item in the best su
 ### Personal information classification ###
 You will get a description for each available category.
 This description will come in the form of !!!!!category_description!!!!!.
-You should use this explenation to classify the information you get from the user.
+You should use this explanation to classify the information you get from the user.
 
 ### General instructions ###
 - Make sure to only use double quotes.
@@ -117,61 +119,11 @@ def organize_personal_information(personal_information: list[str]):
         "get_memory_categories": get_memory_categories_function,
     }
 
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            tools=FUNCTIONS,
-            tool_choice="auto",
-            temperature=0.33,
-            seed=42,
-        )
+    response = OpenAISingleton().get_response_with_function_calling(
+        messages=messages,
+        functions=FUNCTIONS,
+        available_functions=available_functions,
+        temperature=0.25
+    )
 
-        response_message = response.choices[0].message
-        tool_calls = response_message.tool_calls
-
-        counter = 0
-        while tool_calls:
-            counter += 1
-            messages.append(response_message)
-
-            for tool_call in tool_calls:
-                function_name = tool_call.function.name
-                function_to_call = available_functions.get(function_name)
-                if function_to_call:
-                    function_args = json.loads(tool_call.function.arguments)
-                    print(f"({counter}) calling function {function_name}, with args {function_args}")  # nopep8
-                    try:
-                        function_response = function_to_call(**function_args)
-                        messages.append(
-                            {
-                                "tool_call_id": tool_call.id,
-                                "role": "tool",
-                                "name": function_name,
-                                "content": function_response,
-                            }
-                        )
-                    except Exception as e:
-                        messages.append(
-                            {
-                                "tool_call_id": tool_call.id,
-                                "role": "tool",
-                                "name": function_name,
-                                "content": json.dumps({"error": str(e)}),
-                            }
-                        )
-            second_response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=messages,
-                tools=FUNCTIONS,
-                tool_choice="auto",
-                temperature=0.33,
-                seed=42,
-            )
-            response_message = second_response.choices[0].message
-            tool_calls = response_message.tool_calls
-
-        return response_message.content if response_message.content else ''
-
-    except Exception as e:
-        return f"An error occurred: {str(e)}"
+    return response

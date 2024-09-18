@@ -6,10 +6,10 @@ from utilities import *
 SETUP = setup.GoogleServices()
 
 
-def get_Xth_saturday_from_date(X: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> datetime:
-    days_from_today_to_nearest_saturday = 5 - date.weekday() if date.weekday() <= 5 else 6  # nopep8
-    days_from_today_to_X_saturday = days_from_today_to_nearest_saturday + (X * 7)  # nopep8
-    return add_days_to_date(date, days_from_today_to_X_saturday)
+def get_xth_saturday_from_date(x: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> datetime:
+    days_from_today_to_nearest_saturday = 5 - date.weekday() if date.weekday() <= 5 else 6
+    days_from_today_to_x_saturday = days_from_today_to_nearest_saturday + (x * 7)
+    return add_days_to_date(date, days_from_today_to_x_saturday)
 
 
 def _get_all_calendars_data() -> list[dict[str, str]]:
@@ -26,7 +26,7 @@ def get_now() -> datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def _get_all_events_from_specific_calendar_up_to_certain_date(calendarID: str, time_max: datetime) -> list[dict[str, str]]:
+def _get_all_events_from_specific_calendar_up_to_certain_date(calendar_id: str, time_max: datetime) -> list[dict[str, str]]:
     now = get_now().isoformat()
 
     # Convert time_max to datetime if it's a string
@@ -36,7 +36,7 @@ def _get_all_events_from_specific_calendar_up_to_certain_date(calendarID: str, t
     events_result = (
         SETUP.calendar_service.events()
         .list(
-            calendarId=calendarID,
+            calendarId=calendar_id,
             maxResults=100,
             timeMin=now,
             timeMax=time_max.isoformat(),
@@ -69,7 +69,7 @@ def get_all_events_from_today_up_to_certain_date(time_max: datetime, calendars: 
 
 
 def example_get_and_print_events_from_primary_calendar_from_toady_up_to_nearest_saturday():
-    events = _get_all_events_from_specific_calendar_up_to_certain_date("primary", get_Xth_saturday_from_date(0))  # nopep8
+    events = _get_all_events_from_specific_calendar_up_to_certain_date("primary", get_xth_saturday_from_date(0))  # nopep8
 
     if not events:
         print("No upcoming events found.")
