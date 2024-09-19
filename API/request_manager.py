@@ -1,6 +1,7 @@
 from API.open_ai_singleton import OpenAISingleton
 from tasks_handler import *
-from calendar_handler import get_now, get_xth_saturday_from_date, get_all_events_from_today_up_to_certain_date
+from calendar_handler import get_now, get_xth_saturday_from_date, get_all_events_from_today_up_to_certain_date, \
+    get_all_events_from_min_time_to_max_time
 from structure_break_manager import break_structure
 from personal_information_manager import organize_personal_information
 from personal_preferences_manager import organize_personal_preferences, get_level_of_details_desired, get_preferences
@@ -291,26 +292,44 @@ FUNCTIONS = [
                 }
         }
     },
+    # {
+    #     "type": "function",
+    #     "function": {
+    #         "name": "get_all_events_from_today_up_to_certain_date",
+    #         "description": "Get all events from now up to a given datetime.",
+    #         "parameters": {
+    #             "type": "object",
+    #             "properties": {
+    #                 "time_max": {
+    #                     "type": "string",
+    #                     "format": "date-time",
+    #                     "description": "The maximum date and time to get events up to.",
+    #                 },
+    #             },
+    #             "required": ["time_max"],
+    #         },
+    #     },
+    # },
     {
         "type": "function",
         "function": {
-            "name": "get_all_events_from_today_up_to_certain_date",
-            "description": "Get all events from given calendars from now up to a given date.",
+            "name": "get_all_events_from_min_time_to_max_time",
+            "description": "Get all events from a minimum datetime to a maximum datetime",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "time_max": {
+                    "time_min" : {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The minimum date and time to get events from.",
+                    },
+                    "time_max" : {
                         "type": "string",
                         "format": "date-time",
                         "description": "The maximum date and time to get events up to.",
                     },
-                    "calendars": {
-                        "type": "object",
-                        "format": "json",
-                        "description": "A list of calendars with their IDs and summaries. If not provided, all calendars will be used.",
-                    },
                 },
-                "required": ["time_max"],
+                "required": ["time_min", "time_max"],
             },
         },
     },
@@ -350,6 +369,12 @@ def get_all_events_from_today_up_to_certain_date_function(time_max: datetime):  
     return json.dumps(events, indent=4, ensure_ascii=False)
 
 
+def  get_all_events_from_min_time_to_max_time_function(time_min: datetime, time_max: datetime):
+    """Get all events from a minimum datetime to a maximum datetime"""
+    events = get_all_events_from_min_time_to_max_time(time_min, time_max)
+    return json.dumps(events, indent=4, ensure_ascii=False)
+
+
 def get_all_tasks_function():
     """Get all tasks, organized by lists"""
     tasks = get_all_tasks()
@@ -383,10 +408,10 @@ def get_response(prompt: str) -> str:
 
     task = st_br["task"]
 
-    print("classifying relevance")
-    relevant = classify_relevance(task)
-    if relevant == "not relevant":
-        return "I can not help you with that."
+    # print("classifying relevance")
+    # # relevant = classify_relevance(task)
+    # # if relevant == "not relevant":
+    # #     return "I can not help you with that."
 
     print("getting memory and preferences")
     updated_memory = get_memory()
@@ -401,7 +426,8 @@ def get_response(prompt: str) -> str:
 
     available_functions = {
         "get_Xth_saturday_from_date": get_xth_saturday_from_date_function,
-        "get_all_events_from_today_up_to_certain_date": get_all_events_from_today_up_to_certain_date_function,
+        # "get_all_events_from_today_up_to_certain_date": get_all_events_from_today_up_to_certain_date_function,
+        "get_all_events_from_min_time_to_max_time": get_all_events_from_min_time_to_max_time_function,
         "get_all_tasks": get_all_tasks_function,
         "get_all_uncompleted_tasks": get_all_uncompleted_tasks_function,
     }

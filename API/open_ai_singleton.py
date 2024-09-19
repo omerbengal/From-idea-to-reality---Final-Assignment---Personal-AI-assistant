@@ -3,6 +3,7 @@ import threading
 from openai import OpenAI
 
 class OpenAISingleton:
+    _model = "gpt-4o-mini"
     _instance = None
     _lock = threading.Lock()
     _api_key = 'sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv'  # Built-in API key
@@ -21,7 +22,7 @@ class OpenAISingleton:
     def get_response_with_function_calling(self, messages: list[dict[str, str]], functions, available_functions: dict[str, callable], temperature: float, seed: int = 42) -> str:
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=self._model,
                 messages=messages,
                 tools=functions,
                 tool_choice="auto",
@@ -66,7 +67,7 @@ class OpenAISingleton:
                                 }
                             )
                 second_response = self.client.chat.completions.create(
-                    model="gpt-4o-2024-08-06",
+                    model=self._model,
                     messages=messages,
                     tools=functions,
                     tool_choice="auto",
@@ -83,7 +84,7 @@ class OpenAISingleton:
     def get_response_dict(self, messages: list[dict[str, str]], temperature: float, seed: int = 42) -> dict:
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o-2024-08-06",
+                model=self._model,
                 messages=messages,
                 temperature=temperature,
                 seed=seed,
@@ -97,7 +98,7 @@ class OpenAISingleton:
     def get_response_str(self, messages: list[dict[str, str]], temperature: float, seed: int = 42) -> str:
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o-2024-08-06",
+                model=self._model,
                 messages=messages,
                 temperature=temperature,
                 seed=seed,

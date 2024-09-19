@@ -55,7 +55,7 @@ def main():
         # print(events)
 
         # message = f"""My best friend Shaked is getting married next Tuesday. The wedding starts at 18:00. What will I be missing?"""
-        message = f"""When is the cooking class tomorrow on my calendar?
+        message = f"""What is the next event that have not started yet in my calendar?
         """
         response = get_response(message)
         print(response)
