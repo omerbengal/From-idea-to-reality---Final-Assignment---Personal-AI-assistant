@@ -211,7 +211,7 @@ import time
 
 # Constants
 BOT_TOKEN = '7031319241:AAFkaIQ9kXdO4BNuOJUVlleyt40JHr1kR14'
-VIDEO_PATH = "./BirthdayCardGenerator/birthday_card.mp4"
+VIDEO_PATH = "./BirthdayCardGenerator/compressed_birthday_card.mp4"
 
 # Commands
 
