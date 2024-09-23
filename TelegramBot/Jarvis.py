@@ -241,22 +241,30 @@ def handle_response(text: str) -> dict:
     return {
         "type": "video",
         "content": VIDEO_PATH
+        # "type": "text",
+        # "content": "Hi"
     }
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
+    # Send a "Loading response" message to the user and store the message object
+    loading_message = await update.message.reply_text("Loading response...")
+
     try:
         response = handle_response(text)
 
         if response.get('type') == 'text':
-            await update.message.reply_text(remove_escape_characters(response['content']))
+            # Edit the "Loading response" message with the actual response
+            await loading_message.edit_text(remove_escape_characters(response['content']))
         elif response.get('type') == 'video':
+            # Edit the "Loading response" message and then send the video
+            await loading_message.edit_text("Sending video...")
             await send_video(update, context, response['content'])
         else:
-            await update.message.reply_text("Sorry, I don't know how to handle this response type.")
+            await loading_message.edit_text("Sorry, I don't know how to handle this response type.")
     except Exception as e:
-        await update.message.reply_text(f"An error occurred while processing your message: {str(e)}")
+        await loading_message.edit_text(f"An error occurred while processing your message: {str(e)}")
 
 
 async def send_video(update: Update, context: ContextTypes.DEFAULT_TYPE, video_path: str):
