@@ -351,7 +351,7 @@ video_path = "BirthdayCardGenerator/birthday_card_test.mp4"
 clip.write_videofile(video_path)
 
 
-Compress the video using ffmpeg-python
+# Compress the video using ffmpeg-python
 compressed_video_path = "BirthdayCardGenerator/compressed_birthday_card.mp4"
 
 ffmpeg.input(video_path).output(

@@ -4,28 +4,26 @@ from datetime import datetime, timedelta
 from telegram import Update
 import pytz
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-import os
 from telegram.error import TimedOut
-import time
-import openai
-import json
 from openai import OpenAI
 from PIL import Image, ImageDraw, ImageFont
 import random
 import numpy as np
-from moviepy.editor import ImageSequenceClip
-import ffmpeg
+
+import os
+# os.environ["IMAGEIO_FFMPEG_EXE"] = "../venv/lib/python3.12/site-packages/ffmpeg"
+os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/opt/ffmpeg/bin/ffmpeg"
+
+from moviepy.editor import ImageSequenceClip # if using mac, need to perform: "brew install ffmpeg"
 
 # Initialize the OpenAI client
-client = OpenAI(
-    api_key="sk-dWq6WusvsEyySkgOjUa3ZUUv6LadNaNeCs35GZ8H6sT3BlbkFJMWTn7nLmAo0GH4S9F6DxAwwd5l8lxL49oeJCIAH8EA")
+client = OpenAI(api_key="sk-dWq6WusvsEyySkgOjUa3ZUUv6LadNaNeCs35GZ8H6sT3BlbkFJMWTn7nLmAo0GH4S9F6DxAwwd5l8lxL49oeJCIAH8EA")
 
 # Constants
 BOT_TOKEN = '7031319241:AAFkaIQ9kXdO4BNuOJUVlleyt40JHr1kR14'
-VIDEO_PATH = "./BirthdayCardGenerator/birthday_card.mp4"
-TEXT_FILE_PATH = "./BirthdayCardGenerator/birthday_message.txt"
-VOICE_DOWNLOAD_PATH = "./voice_messages/"
-BOT_TOKEN = "7031319241:AAFkaIQ9kXdO4BNuOJUVlleyt40JHr1kR14"
+VIDEO_PATH = "../BirthdayCardGenerator/birthday_card.mp4"
+TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
+VOICE_DOWNLOAD_PATH = "../voice_messages/"
 ISRAEL_TZ = pytz.timezone('Asia/Jerusalem')
 
 # Helper Functions
@@ -39,7 +37,7 @@ def parse_reminder(text: str):
 
 def get_time_difference(time_str):
     now = datetime.now(ISRAEL_TZ)
-    format = '%d %b %Y %H:%M:%S'
+    # format = '%d %b %Y %H:%M:%S'
     reminder_time = ISRAEL_TZ.localize(datetime.strptime(time_str, "%H:%M").replace(year=now.year, month=now.month, day=now.day))
     if reminder_time < now:
         reminder_time += timedelta(days=1)
@@ -90,22 +88,8 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Process transcribed text
         transcribed_text = transcript.text
-        await update.message.reply_text(f"I heard: {transcribed_text}")
-
-        # Generate response using GPT
-        messages = [
-            {"role": "system", "content": "You are a helpful assistant responding to voice messages."},
-            {"role": "user", "content": transcribed_text}
-        ]
-
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=messages,
-            temperature=0.7
-        )
-
-        # Send response back to user
-        await update.message.reply_text(response.choices[0].message.content)
+        response = handle_response(transcribed_text)
+        await update.message.reply_text(response)
 
         # Clean up: delete the voice file
         os.remove(file_name)
@@ -147,7 +131,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(response)
 
 
-async def generate_birthday_text(update: Update, context: ContextTypes.DEFAULT_TYPE, name: str) -> str:
+async def generate_birthday_text(update: Update, context: ContextTypes.DEFAULT_TYPE, name: str):
     prompt = f"""Generate a heartfelt and creative birthday message for {name}.
     The message should be totally generic so it could fit anyone.
     The message should always start with Happy birthday {name}!
@@ -204,19 +188,19 @@ async def generate_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return confetti
 
         def create_frame(base_image: Image, confetti: list, frame_number: int) -> np.ndarray:
-            frame = base_image.copy()
-            draw = ImageDraw.Draw(frame)
+            frame_array = base_image.copy()
+            draw_element = ImageDraw.Draw(frame_array)
 
             for x, y, size, color in confetti:
-                wrapped_y = (y + frame_number * 10) % (frame.height + size)
-                draw.rectangle(
+                wrapped_y = (y + frame_number * 10) % (frame_array.height + size)
+                draw_element.rectangle(
                     [x, wrapped_y, x + size, wrapped_y + size], fill=color)
 
-            return np.array(frame)
+            return np.array(frame_array)
 
-        images = ['BirthdayCardGenerator/Blue.jpg', 'BirthdayCardGenerator/Green.jpg', 'BirthdayCardGenerator/Orange.jpg',
-                  'BirthdayCardGenerator/Pink.jpg', 'BirthdayCardGenerator/Purple.jpg', 'BirthdayCardGenerator/Red.jpg',
-                  'BirthdayCardGenerator/LightBlue.jpg']
+        images = ['../BirthdayCardGenerator/Blue.jpg', '../BirthdayCardGenerator/Green.jpg', '../BirthdayCardGenerator/Orange.jpg',
+                  '../BirthdayCardGenerator/Pink.jpg', '../BirthdayCardGenerator/Purple.jpg', '../BirthdayCardGenerator/Red.jpg',
+                  '../BirthdayCardGenerator/LightBlue.jpg']
         base_image = Image.open(random.choice(images))
 
         draw = ImageDraw.Draw(base_image)
