@@ -1,9 +1,5 @@
 from urllib.parse import unquote
-from calendar_handler import *
-from tasks_handler import *
-from request_manager import *
-from memory_handler import *
-from structure_break_manager import *
+from request_manager import get_response
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -23,7 +19,7 @@ app.add_middleware(
 
 # FastAPI routes
 @app.get("/Jarvis")
-def get_response_from_Jarvis(request: str) -> str:
+def get_response_from_jarvis(request: str) -> str:
     try:
         # url decode the request
         request = request.replace("%20", " ")
@@ -59,9 +55,8 @@ def main():
         # print(events)
 
         # message = f"""My best friend Shaked is getting married next Tuesday. The wedding starts at 18:00. What will I be missing?"""
-        message = f"""I want to plan a full weekend trip for me and my girlfriend Amit.
-        Can you find me the next free of events weekend in my calendar?
-        """
+        # message = f"""When I ask you what is my next event on my calendar - I want you to provide the title, date, time, and duration."""
+        message = f"""What is the next event on my calendar?"""
         response = get_response(message)
         print(response)
 

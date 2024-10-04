@@ -1,8 +1,8 @@
 import json
 from openai import OpenAI
 
+from API.open_ai_singleton import OpenAISingleton
 
-client = OpenAI(api_key="sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv")  # nopep8
 memory_categories_explanations = open("memory_categories_explanations.txt", "r").read()  # nopep8
 STRUCTURE_BREAKER_SYSTEM_ROLE = """
 ### Important information ###
@@ -15,7 +15,7 @@ STRUCTURE_BREAKER_SYSTEM_ROLE = """
 You are an expert words analyzer.
 You will act as a middleman between a user and an AI personal assistant.
 You will get a prompt from the user and analyze it, it will come in the form of >>>>>prompt<<<<<.
-The prompt can potentially contian one or more of the following ideas:
+The prompt can potentially contain one or more of the following ideas:
 - Some personal information about the user's life.
 - Some preferences of the user about the AI personal assistant.
 - A task for the AI personal assistant to do.
@@ -57,17 +57,9 @@ def break_structure(prompt: str) -> dict:
         {"role": "user", "content": f">>>>>{prompt}<<<<<"}
     ]
 
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            temperature=0.33,
-            seed=42,
-        )
+    response = OpenAISingleton().get_response_dict(
+        messages=messages,
+        temperature=0.33
+    )
 
-        response_message = response.choices[0].message
-
-        return json.loads(response_message.content) if response_message.content else ''
-
-    except Exception as e:
-        return f"An error occurred: {str(e)}"
+    return response

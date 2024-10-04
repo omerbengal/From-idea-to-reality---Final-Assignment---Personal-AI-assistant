@@ -1,18 +1,20 @@
+from API.open_ai_singleton import OpenAISingleton
+from tasks_handler import *
+from calendar_handler import get_now, get_xth_saturday_from_date, get_all_events_from_today_up_to_certain_date, \
+    get_all_events_from_min_time_to_max_time
+from structure_break_manager import break_structure
+from personal_information_manager import organize_personal_information
+from personal_preferences_manager import organize_personal_preferences, get_level_of_details_desired, get_preferences
+from request_relevance_manager import classify_relevance
+from memory_handler import get_memory
 from openai import OpenAI
 import json
-from calendar_handler import *
-from tasks_handler import *
-from memory_handler import *
-from preferences_handler import *
-from structure_break_manager import *
-from personal_information_manager import *
-from personal_preferences_manager import *
-from request_relevance_manager import *
+import datetime
 
-TODAY = get_now().isoformat()  # nopep8
+
+TODAY = get_now().isoformat()
 LEVEL_OF_DETAILS_DESIRED = get_level_of_details_desired()
 
-client = OpenAI(api_key="sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv")  # nopep8
 OLD_SYSTEM_ROLE = """You are a helpful AI personal assistant.
 Your main essence is to help the user to manage his busy life.
 You will get to know about the user's:
@@ -111,7 +113,7 @@ More important information:
 
 The steps to follow with each request:
 1. Load the memory.
-2. If the user shared some information about theirself, insert it into the memory.
+2. If the user shared some information about their self, insert it into the memory.
 3. Get up-to-date information about the user's tasks and calendar events.
 4. If the user asked for a summary or a detailed list of their schedule and tasks, provide it.
 5. If the user asked for personalized advice or recommendations, provide it.
@@ -150,7 +152,7 @@ Make sure to pay attention for time where updating or deleting existing informat
 The steps to follow with each request:
 1. Load the memory.
 2. Load the preferences.
-3. If the user shared some information about theirself:
+3. If the user shared some information about their self:
     2.1. Check if it is already in the memory:
         2.2.1 If it is not, then check if there is a category in the memory that matches the category of the information you want to save:
             2.2.1.1 If there is a category that matches the category of the information you want to save, then add the information to that category.
@@ -175,7 +177,6 @@ AI_PERSONAL_ASSISTANT_SYSTEM_ROLE = f"""
 - Weekends start on Friday and end on Saturday.
 - The user likes a details level of {LEVEL_OF_DETAILS_DESIRED}/10.
 This is a number between 0 and 10, where 0 is not detailed at all (general summary), and 10 is detailed to the point where you can provide a detailed list.
-
 
 ### System Role ###
 You are a helpful AI personal assistant, a new version of AI model able to manage and optimize the user’s busy life.
@@ -207,7 +208,6 @@ This task will come in the form of >>>>>task<<<<<
 If the task is an empty string, then just answer nicely according to the user's prompt.
 """
 
-
 EXAMPLE1 = """
 I tend to be very lazy and I want to improve it. Can you help me find a spot next week where I can sit down and organize my tasks and schedule?
 """
@@ -231,14 +231,14 @@ EXAMPLE2_REASONING = """The user is asking for an overview of their upcoming eve
 The user should get a general idea of what events they have scheduled for the weekend of the current week."""
 EXAMPLE2_OUTPUT = """Your weekend is full with several events:
 On Friday, you meet with your friends for an acai bowl at "היפים והמיצים" in the morning, in the afternoon you study a bit, and in the evening you have a dinner with your family.
-On Saturday, you have a MRI for your knee at 04:30, followed by your cousine's Torah reading at 08:30. Then, at noon, your girlfriend comes over to your mom's place and spends the afternoon with the family. The rest of the day will be dedicated to studying and working on your projects.
+On Saturday, you have a MRI for your knee at 04:30, followed by your cousin's Torah reading at 08:30. Then, at noon, your girlfriend comes over to your mom's place and spends the afternoon with the family. The rest of the day will be dedicated to studying and working on your projects.
 """
 
 EXAMPLE3 = """
 Lately I tend to be very lazy and I want to improve it. Can you help me find some time next week where I can sit down and organize my tasks and schedule?
 """
 EXAMPLE3_REASONING = """
-- Does the user share some information about theirself? Yes.
+- Does the user share some information about their self? Yes.
 - Does the user ask for a schedule specific request? Yes.
 - Does the user ask for a task specific request? No.
 - Does the user ask for personalized advice or recommendations? No.
@@ -252,11 +252,12 @@ If there is no category that matches the category of the information the user sh
 3. Load the user's schedule for next week.
 4. search for a time slot where the user can sit down and organize their tasks and schedule.
 """
+
 EXAMPLE4 = """
 What events do I have this weekend?
 """
 EXAMPLE4_REASONING = """
-- Does the user share some information about theirself? No.
+- Does the user share some information about their self? No.
 - Does the user ask for a schedule specific request? Yes.
 - Does the user ask for a task specific request? No.
 - Does the user ask for personalized advice or recommendations? No.
@@ -272,45 +273,63 @@ FUNCTIONS = [
     {
         "type": "function",
         "function": {
-                "name": "get_Xth_saturday_from_date",
-                "description": "Get the Xth saturday from a given date.",
+                "name": "get_xth_saturday_from_date",
+                "description": "Get the xth saturday from a given date.",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "X": {
+                        "x": {
                             "type": "integer",
-                            "description": "The number of weeks ahead to find the X-th Saturday. 0 is the current week, 1 is the next week, etc.",
+                            "description": "The number of weeks ahead to find the x-th Saturday. 0 is the current week, 1 is the next week, etc.",
                         },
                         "date": {
                             "type": "string",
                             "format": "date-time",
-                            "description": "The starting date from which to calculate the X-th Saturday. Defaults to the current date and time in UTC if not provided."
+                            "description": "The starting date from which to calculate the x-th Saturday. Defaults to the current date and time in UTC if not provided."
                         }
                     },
-                    "required": ["X"]
+                    "required": ["x"]
                 }
         }
     },
+    # {
+    #     "type": "function",
+    #     "function": {
+    #         "name": "get_all_events_from_today_up_to_certain_date",
+    #         "description": "Get all events from now up to a given datetime.",
+    #         "parameters": {
+    #             "type": "object",
+    #             "properties": {
+    #                 "time_max": {
+    #                     "type": "string",
+    #                     "format": "date-time",
+    #                     "description": "The maximum date and time to get events up to.",
+    #                 },
+    #             },
+    #             "required": ["time_max"],
+    #         },
+    #     },
+    # },
     {
         "type": "function",
         "function": {
-            "name": "get_all_events_from_today_up_to_certain_date",
-            "description": "Get all events from given calendars from now up to a given date.",
+            "name": "get_all_events_from_min_time_to_max_time",
+            "description": "Get all events from a minimum datetime to a maximum datetime",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "time_max": {
+                    "time_min" : {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The minimum date and time to get events from.",
+                    },
+                    "time_max" : {
                         "type": "string",
                         "format": "date-time",
                         "description": "The maximum date and time to get events up to.",
                     },
-                    "calendars": {
-                        "type": "object",
-                        "format": "json",
-                        "description": "A list of calendars with their IDs and summaries. If not provided, all calendars will be used.",
-                    },
                 },
-                "required": ["time_max"],
+                "required": ["time_min", "time_max"],
             },
         },
     },
@@ -318,7 +337,7 @@ FUNCTIONS = [
         "type": "function",
         "function": {
             "name": "get_all_tasks",
-            "description": "Get all tasks, organized by lists",
+            "description": "Get all tasks as a dictionary, organized by lists as keys",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -329,7 +348,7 @@ FUNCTIONS = [
         "type": "function",
         "function": {
             "name": "get_all_uncompleted_tasks",
-            "description": "Get all uncompleted tasks, organized by lists",
+            "description": "Get all uncompleted tasks as a dictionary, organized by lists as keys",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -339,14 +358,20 @@ FUNCTIONS = [
 ]
 
 
-def get_Xth_saturday_from_date_function(X: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)):
+def get_xth_saturday_from_date_function(x: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)):
     """Get the Xth saturday from a given date"""
-    return json.dumps({"Xth_saturday": get_Xth_saturday_from_date(X, date).isoformat()})
+    return json.dumps({"Xth_saturday": get_xth_saturday_from_date(x, date).isoformat()})
 
 
-def get_all_events_from_today_up_to_certain_date_function(time_max: datetime):  # maybe add argument: "calendars: list[dict[str, str]]" # nopep8
+def get_all_events_from_today_up_to_certain_date_function(time_max: datetime):  # maybe add argument: "calendars: list[dict[str, str]]"
     """Get all events from some calendars up to a certain date"""
-    events = get_all_events_from_today_up_to_certain_date(time_max)  # maybe add argument: "calendars" # nopep8
+    events = get_all_events_from_today_up_to_certain_date(time_max)  # maybe add argument: "calendars"
+    return json.dumps(events, indent=4, ensure_ascii=False)
+
+
+def  get_all_events_from_min_time_to_max_time_function(time_min: datetime, time_max: datetime):
+    """Get all events from a minimum datetime to a maximum datetime"""
+    events = get_all_events_from_min_time_to_max_time(time_min, time_max)
     return json.dumps(events, indent=4, ensure_ascii=False)
 
 
@@ -363,29 +388,32 @@ def get_all_uncompleted_tasks_function():
 
 
 def get_response(prompt: str) -> str:
+    print("structure breaking")
     st_br = break_structure(prompt)
 
-    if "information" in st_br:
+    if "information" in st_br.keys():
         information = st_br["information"]
         if information:
+            print("organizing personal information")
             organize_personal_information(information)
 
-    if "preferences" in st_br:
+    if "preferences" in st_br.keys():
         preferences = st_br["preferences"]
         if preferences:
+            print("organizing personal preferences")
             organize_personal_preferences(preferences)
 
-    if "task" not in st_br:
-        return
+    if "task" not in st_br.keys():
+        return ""
 
     task = st_br["task"]
-    # if not task:
-    #     return
 
-    relevant = classify_relevance(task)
-    if relevant == "not relevant":
-        return "I can not help you with that."
+    # print("classifying relevance")
+    # # relevant = classify_relevance(task)
+    # # if relevant == "not relevant":
+    # #     return "I can not help you with that."
 
+    print("getting memory and preferences")
     updated_memory = get_memory()
     updated_preferences = get_preferences()
 
@@ -397,71 +425,20 @@ def get_response(prompt: str) -> str:
     ]
 
     available_functions = {
-        "get_Xth_saturday_from_date": get_Xth_saturday_from_date_function,
-        "get_all_events_from_today_up_to_certain_date": get_all_events_from_today_up_to_certain_date_function,
+        "get_Xth_saturday_from_date": get_xth_saturday_from_date_function,
+        # "get_all_events_from_today_up_to_certain_date": get_all_events_from_today_up_to_certain_date_function,
+        "get_all_events_from_min_time_to_max_time": get_all_events_from_min_time_to_max_time_function,
         "get_all_tasks": get_all_tasks_function,
         "get_all_uncompleted_tasks": get_all_uncompleted_tasks_function,
     }
 
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            tools=FUNCTIONS,
-            tool_choice="auto",
-            temperature=0.25,
-            seed=42,
-        )
+    print(f'messages are: {messages}')
 
-        response_message = response.choices[0].message
-        tool_calls = response_message.tool_calls
+    response = OpenAISingleton().get_response_with_function_calling(
+        messages=messages,
+        functions=FUNCTIONS,
+        available_functions=available_functions,
+        temperature=0.25
+    )
 
-        # print(f"checking if need to use tools")
-        counter = 0
-        while tool_calls:
-            counter += 1
-            # print(f"I'm using tools now! ({counter})")
-            messages.append(response_message)
-
-            # print(f"going through tool calls! ({counter}):\n{tool_calls}")
-            for tool_call in tool_calls:
-                function_name = tool_call.function.name
-                # print(f"function name: {function_name} ({counter})")
-                function_to_call = available_functions.get(function_name)
-                if function_to_call:
-                    function_args = json.loads(tool_call.function.arguments)
-                    print(f"({counter}) calling function {function_name}, with args {function_args}")  # nopep8
-                    try:
-                        function_response = function_to_call(**function_args)
-                        messages.append(
-                            {
-                                "tool_call_id": tool_call.id,
-                                "role": "tool",
-                                "name": function_name,
-                                "content": function_response,
-                            }
-                        )
-                    except Exception as e:
-                        messages.append(
-                            {
-                                "tool_call_id": tool_call.id,
-                                "role": "tool",
-                                "name": function_name,
-                                "content": json.dumps({"error": str(e)}),
-                            }
-                        )
-            second_response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=messages,
-                tools=FUNCTIONS,
-                tool_choice="auto",
-                temperature=0.25,
-                seed=42,
-            )
-            response_message = second_response.choices[0].message
-            tool_calls = response_message.tool_calls
-
-        return response_message.content if response_message.content else ''
-
-    except Exception as e:
-        return f"An error occurred: {str(e)}"
+    return response

@@ -2,7 +2,7 @@ import datetime
 import json
 
 
-def get_preferences() -> dict[str, str]:
+def get_preferences() -> dict[str, int | str]:
     with open("preferences.json", "r") as f:
         preferences = json.load(f)
     return preferences

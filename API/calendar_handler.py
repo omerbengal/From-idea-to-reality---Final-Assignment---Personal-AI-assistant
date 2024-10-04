@@ -1,4 +1,6 @@
 import datetime
+import json
+
 import setup
 from utilities import *
 
@@ -6,10 +8,10 @@ from utilities import *
 SETUP = setup.GoogleServices()
 
 
-def get_Xth_saturday_from_date(X: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> datetime:
-    days_from_today_to_nearest_saturday = 5 - date.weekday() if date.weekday() <= 5 else 6  # nopep8
-    days_from_today_to_X_saturday = days_from_today_to_nearest_saturday + (X * 7)  # nopep8
-    return add_days_to_date(date, days_from_today_to_X_saturday)
+def get_xth_saturday_from_date(x: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> datetime:
+    days_from_today_to_nearest_saturday = 5 - date.weekday() if date.weekday() <= 5 else 6
+    days_from_today_to_x_saturday = days_from_today_to_nearest_saturday + (x * 7)
+    return add_days_to_date(date, days_from_today_to_x_saturday)
 
 
 def _get_all_calendars_data() -> list[dict[str, str]]:
@@ -26,20 +28,14 @@ def get_now() -> datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def _get_all_events_from_specific_calendar_up_to_certain_date(calendarID: str, time_max: datetime) -> list[dict[str, str]]:
-    now = get_now().isoformat()
-
-    # Convert time_max to datetime if it's a string
-    if isinstance(time_max, str):
-        time_max = datetime.datetime.fromisoformat(time_max)
-
+def _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id: str, time_min: datetime, time_max: datetime) -> list[dict[str, str]]:
     events_result = (
         SETUP.calendar_service.events()
         .list(
-            calendarId=calendarID,
+            calendarId=calendar_id,
             maxResults=100,
-            timeMin=now,
-            timeMax=time_max.isoformat(),
+            timeMin=time_min,
+            timeMax=time_max,
             singleEvents=True,
             orderBy="startTime",
         )
@@ -50,26 +46,45 @@ def _get_all_events_from_specific_calendar_up_to_certain_date(calendarID: str, t
     for event in events:
         event["title"] = clean_bidirectional_text(event["summary"])
         if "description" in event:
-            event["description"] = clean_bidirectional_text(event["description"])  # nopep8
+            event["description"] = clean_bidirectional_text(event["description"])
         if "location" in event:
-            event["location"] = clean_bidirectional_text(event["location"])  # nopep8
+            event["location"] = clean_bidirectional_text(event["location"])
 
     return events
 
 
-def get_all_events_from_today_up_to_certain_date(time_max: datetime, calendars: list[dict[str, str]] = None) -> dict[str, list[dict[str, str]]]:  # nopep8
+def _get_all_events_from_specific_calendar_up_to_certain_date(calendar_id: str, time_max: datetime) -> list[dict[str, str]]:
+    now = get_now()
+
+    # Convert time_max to datetime if it's a string
+    if isinstance(time_max, str):
+        time_max = datetime.datetime.fromisoformat(time_max)
+
+    return _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id, now, time_max)
+
+
+def get_all_events_from_min_time_to_max_time(time_min: datetime, time_max: datetime) -> dict[str, list[dict[str, str]]]:
     events = {}
-    if calendars is None or len(calendars) == 0:
-        calendars = _get_all_calendars_data()
+    calendars = _get_all_calendars_data()
     for calendar in calendars:
         calendar_id = calendar["id"]
         calendar_title = calendar["summary"]
-        events[calendar_title] = _get_all_events_from_specific_calendar_up_to_certain_date(calendar_id, time_max)  # nopep8
+        events[calendar_title] = _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id, time_min, time_max)
+    return events
+
+
+def get_all_events_from_today_up_to_certain_date(time_max: datetime) -> dict[str, list[dict[str, str]]]:
+    events = {}
+    calendars = _get_all_calendars_data()
+    for calendar in calendars:
+        calendar_id = calendar["id"]
+        calendar_title = calendar["summary"]
+        events[calendar_title] = _get_all_events_from_specific_calendar_up_to_certain_date(calendar_id, time_max)
     return events
 
 
 def example_get_and_print_events_from_primary_calendar_from_toady_up_to_nearest_saturday():
-    events = _get_all_events_from_specific_calendar_up_to_certain_date("primary", get_Xth_saturday_from_date(0))  # nopep8
+    events = _get_all_events_from_specific_calendar_up_to_certain_date("primary", get_xth_saturday_from_date(0))  # nopep8
 
     if not events:
         print("No upcoming events found.")
@@ -82,4 +97,4 @@ def example_get_and_print_events_from_primary_calendar_from_toady_up_to_nearest_
         description = event.get("description", "")
         location = event.get("location", "")
 
-        print(f"title: {title}\nbegda: {begda}\nendda: {endda}\nstatus: {status}\ndescription: {description}\nlocation: {location}\n")  # nopep8
+        print(f"title: {title}\nbegda: {begda}\nendda: {endda}\nstatus: {status}\ndescription: {description}\nlocation: {location}\n")

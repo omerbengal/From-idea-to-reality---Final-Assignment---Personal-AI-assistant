@@ -1,4 +1,6 @@
 import json
+from typing import Dict, List
+
 import setup
 from utilities import *
 
@@ -23,7 +25,7 @@ def _get_all_tasks_from_list(tasklistID: str) -> list[dict[str, str]]:
     return tasks
 
 
-def get_all_tasks() -> list[dict[str, str]]:
+def get_all_tasks() -> dict[str, list[dict[str, str]]]:
     lists = _get_all_tasks_lists()
     tasks = {}
     for list in lists:
@@ -31,7 +33,7 @@ def get_all_tasks() -> list[dict[str, str]]:
     return tasks
 
 
-def get_all_uncompleted_tasks() -> list[dict[str, str]]:
+def get_all_uncompleted_tasks() -> dict[str, list[dict[str, str]]]:
     tasks = get_all_tasks()
     uncompleted_tasks = {}
     for list in tasks:
