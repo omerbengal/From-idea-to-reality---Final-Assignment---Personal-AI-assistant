@@ -1,3 +1,5 @@
+# if using mac, need to perform: "brew install ffmpeg"
+from moviepy.editor import ImageSequenceClip
 import requests
 import re
 from datetime import datetime, timedelta
@@ -14,34 +16,43 @@ import os
 # os.environ["IMAGEIO_FFMPEG_EXE"] = "../venv/lib/python3.12/site-packages/ffmpeg"
 os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/opt/ffmpeg/bin/ffmpeg"
 
-from moviepy.editor import ImageSequenceClip # if using mac, need to perform: "brew install ffmpeg"
 
 # Initialize the OpenAI client
-client = OpenAI(api_key="sk-dWq6WusvsEyySkgOjUa3ZUUv6LadNaNeCs35GZ8H6sT3BlbkFJMWTn7nLmAo0GH4S9F6DxAwwd5l8lxL49oeJCIAH8EA")
+client = OpenAI(
+    api_key="sk-dWq6WusvsEyySkgOjUa3ZUUv6LadNaNeCs35GZ8H6sT3BlbkFJMWTn7nLmAo0GH4S9F6DxAwwd5l8lxL49oeJCIAH8EA")
 
 # Constants
 BOT_TOKEN = '7031319241:AAFkaIQ9kXdO4BNuOJUVlleyt40JHr1kR14'
-VIDEO_PATH = "../BirthdayCardGenerator/birthday_card.mp4"
-TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
-VOICE_DOWNLOAD_PATH = "../voice_messages/"
+# VIDEO_PATH = "../BirthdayCardGenerator/birthday_card.mp4"
+# TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
+# VOICE_DOWNLOAD_PATH = "../voice_messages/"
+VIDEO_PATH = "./BirthdayCardGenerator/birthday_card.mp4"
+TEXT_FILE_PATH = "./BirthdayCardGenerator/birthday_message.txt"
+VOICE_DOWNLOAD_PATH = "./voice_messages/"
 ISRAEL_TZ = pytz.timezone('Asia/Jerusalem')
 
 # Helper Functions
+
+
 def parse_reminder(text: str):
-    match = re.search(r"remind me to (.+) at (\d{2}:\d{2})", text, re.IGNORECASE)
+    match = re.search(
+        r"remind me to (.+) at (\d{2}:\d{2})", text, re.IGNORECASE)
     if match:
         task = match.group(1)
         time_str = match.group(2)
         return task, time_str
     return None, None
 
+
 def get_time_difference(time_str):
     now = datetime.now(ISRAEL_TZ)
     # format = '%d %b %Y %H:%M:%S'
-    reminder_time = ISRAEL_TZ.localize(datetime.strptime(time_str, "%H:%M").replace(year=now.year, month=now.month, day=now.day))
+    reminder_time = ISRAEL_TZ.localize(datetime.strptime(
+        time_str, "%H:%M").replace(year=now.year, month=now.month, day=now.day))
     if reminder_time < now:
         reminder_time += timedelta(days=1)
     return (reminder_time - now).total_seconds()
+
 
 async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
@@ -52,6 +63,8 @@ async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
 os.makedirs(VOICE_DOWNLOAD_PATH, exist_ok=True)
 
 # Commands
+
+
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         'Hello, I am Jarvis, your personal assistant. I can help you with a variety of tasks and answer your questions. What can I do for you?'
@@ -98,11 +111,11 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Sorry, there was an error processing your voice message: {str(e)}")
 
 
-
 # Responses
 def handle_response(text: str) -> str:
     response = requests.get(f"http://127.0.0.1:8000/Jarvis?request={text}")
     return response.text.strip('"')  # Clean up the response text
+
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
@@ -121,7 +134,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             seconds_until_reminder = get_time_difference(time_str)
             if seconds_until_reminder > 0:
                 # Adding the job to the queue
-                job = context.job_queue.run_once(send_reminder, seconds_until_reminder, chat_id=update.message.chat_id, name=f"reminder_{task}", data={"task": task})
+                job = context.job_queue.run_once(
+                    send_reminder, seconds_until_reminder, chat_id=update.message.chat_id, name=f"reminder_{task}", data={"task": task})
                 print(job)
                 await update.message.reply_text(f"Reminder set for {time_str} to: {task}!!!!!!!")
             else:
@@ -192,15 +206,19 @@ async def generate_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
             draw_element = ImageDraw.Draw(frame_array)
 
             for x, y, size, color in confetti:
-                wrapped_y = (y + frame_number * 10) % (frame_array.height + size)
+                wrapped_y = (y + frame_number *
+                             10) % (frame_array.height + size)
                 draw_element.rectangle(
                     [x, wrapped_y, x + size, wrapped_y + size], fill=color)
 
             return np.array(frame_array)
 
-        images = ['../BirthdayCardGenerator/Blue.jpg', '../BirthdayCardGenerator/Green.jpg', '../BirthdayCardGenerator/Orange.jpg',
-                  '../BirthdayCardGenerator/Pink.jpg', '../BirthdayCardGenerator/Purple.jpg', '../BirthdayCardGenerator/Red.jpg',
-                  '../BirthdayCardGenerator/LightBlue.jpg']
+        # images = ['../BirthdayCardGenerator/Blue.jpg', '../BirthdayCardGenerator/Green.jpg', '../BirthdayCardGenerator/Orange.jpg',
+        #           '../BirthdayCardGenerator/Pink.jpg', '../BirthdayCardGenerator/Purple.jpg', '../BirthdayCardGenerator/Red.jpg',
+        #           '../BirthdayCardGenerator/LightBlue.jpg']
+        images = ['./BirthdayCardGenerator/Blue.jpg', './BirthdayCardGenerator/Green.jpg', './BirthdayCardGenerator/Orange.jpg',
+                  './BirthdayCardGenerator/Pink.jpg', './BirthdayCardGenerator/Purple.jpg', './BirthdayCardGenerator/Red.jpg',
+                  './BirthdayCardGenerator/LightBlue.jpg']
         base_image = Image.open(random.choice(images))
 
         draw = ImageDraw.Draw(base_image)
@@ -290,11 +308,16 @@ async def send_video(update: Update, context: ContextTypes.DEFAULT_TYPE, video_p
                 write_timeout=300,
                 connect_timeout=60
             )
+
+            if os.path.exists(video_path):
+                os.remove(video_path)
+            if os.path.exists(TEXT_FILE_PATH):
+                os.remove(TEXT_FILE_PATH)
+
     except TimedOut as e:
         await update.message.reply_text("The video upload timed out. Please try again or contact the bot administrator.")
     except Exception as e:
         await update.message.reply_text(f"An error occurred while sending the video: {str(e)}")
-
 
 
 # Errors
@@ -312,7 +335,8 @@ if __name__ == '__main__':
     # Add voice handler
     app.add_handler(MessageHandler(filters.VOICE, handle_voice))
     # Add text handler
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(MessageHandler(
+        filters.TEXT & ~filters.COMMAND, handle_message))
     # Errors
     app.add_error_handler(error)
 
