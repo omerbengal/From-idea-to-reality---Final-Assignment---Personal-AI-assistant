@@ -1,7 +1,7 @@
 import json
 from openai import OpenAI
 
-from API.open_ai_singleton import OpenAISingleton
+from open_ai_singleton import OpenAISingleton
 
 memory_categories_explanations = open("memory_categories_explanations.txt", "r").read()  # nopep8
 STRUCTURE_BREAKER_SYSTEM_ROLE = """

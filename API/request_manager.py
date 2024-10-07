@@ -1,4 +1,4 @@
-from API.open_ai_singleton import OpenAISingleton
+from open_ai_singleton import OpenAISingleton
 from tasks_handler import *
 from calendar_handler import get_now, get_xth_saturday_from_date, get_all_events_from_today_up_to_certain_date, \
     get_all_events_from_min_time_to_max_time

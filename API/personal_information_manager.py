@@ -1,6 +1,6 @@
 from openai import OpenAI
 
-from API.open_ai_singleton import OpenAISingleton
+from open_ai_singleton import OpenAISingleton
 from calendar_handler import *
 from memory_handler import *
 
