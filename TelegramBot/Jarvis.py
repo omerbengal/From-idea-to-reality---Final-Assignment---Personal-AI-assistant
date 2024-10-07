@@ -13,13 +13,13 @@ import random
 import numpy as np
 
 import os
-# os.environ["IMAGEIO_FFMPEG_EXE"] = "../venv/lib/python3.12/site-packages/ffmpeg"
 os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/opt/ffmpeg/bin/ffmpeg"
 
 
 # Initialize the OpenAI client
 client = OpenAI(
     api_key="sk-dWq6WusvsEyySkgOjUa3ZUUv6LadNaNeCs35GZ8H6sT3BlbkFJMWTn7nLmAo0GH4S9F6DxAwwd5l8lxL49oeJCIAH8EA")
+
 
 # Constants
 BOT_TOKEN = '7031319241:AAFkaIQ9kXdO4BNuOJUVlleyt40JHr1kR14'
@@ -31,9 +31,8 @@ TEXT_FILE_PATH = "./BirthdayCardGenerator/birthday_message.txt"
 VOICE_DOWNLOAD_PATH = "./voice_messages/"
 ISRAEL_TZ = pytz.timezone('Asia/Jerusalem')
 
+
 # Helper Functions
-
-
 def parse_reminder(text: str):
     match = re.search(
         r"remind me to (.+) at (\d{2}:\d{2})", text, re.IGNORECASE)
@@ -58,13 +57,13 @@ async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
     print(job)
     await context.bot.send_message(job.chat_id, text=f"⏰ Reminder: {job.data['task']}")
-# Ensure voice messages directory exists
 
+
+# Ensure voice messages directory exists
 os.makedirs(VOICE_DOWNLOAD_PATH, exist_ok=True)
 
+
 # Commands
-
-
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         'Hello, I am Jarvis, your personal assistant. I can help you with a variety of tasks and answer your questions. What can I do for you?'
@@ -75,9 +74,8 @@ async def test_video_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await update.message.reply_text("Please provide the name for the birthday card.")
     context.user_data['awaiting_name'] = True
 
+
 # New function to handle voice messages
-
-
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Inform user that processing is starting
