@@ -84,7 +84,7 @@ def get_all_events_from_today_up_to_certain_date(time_max: datetime) -> dict[str
 
 
 def example_get_and_print_events_from_primary_calendar_from_toady_up_to_nearest_saturday():
-    events = _get_all_events_from_specific_calendar_up_to_certain_date("primary", get_xth_saturday_from_date(0))  # nopep8
+    events = _get_all_events_from_specific_calendar_up_to_certain_date("primary", get_xth_saturday_from_date(0))
 
     if not events:
         print("No upcoming events found.")

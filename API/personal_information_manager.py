@@ -5,9 +5,9 @@ from calendar_handler import *
 from memory_handler import *
 
 
-TODAY = get_now().isoformat()  # nopep8
-client = OpenAI(api_key="sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv")  # nopep8
-memory_categories_explanations = open("memory_categories_explanations.txt", "r").read()  # nopep8
+TODAY = get_now().isoformat()
+client = OpenAI(api_key="sk-proj-4YEmICxNrRVUv8OWO3VlT3BlbkFJVbmbwykJsteagH4it3lv")
+memory_categories_explanations = open("memory_categories_explanations.txt", "r").read()
 PERSONAL_INFORMATION_MANAGER_SYSTEM_ROLE = f"""
 ### Important information ###
 - Date format is "DD/MM/YYYY".
@@ -103,13 +103,13 @@ def organize_personal_information(personal_information: list[str]):
     messages = [
         # {"role": "system", "content": f"""Today's date is {TODAY}."""},
         {"role": "system", "content": PERSONAL_INFORMATION_MANAGER_SYSTEM_ROLE},
-        {"role": "system", "content": f"!!!!!{memory_categories_explanations}!!!!!"},  # nopep8
+        {"role": "system", "content": f"!!!!!{memory_categories_explanations}!!!!!"},
         # {"role": "user", "content": EXAMPLE3},
-        # {"role": "system", "content": EXAMPLE3_REASONING},  # nopep8
-        # # {"role": "assistant", "content": EXAMPLE1_OUTPUT},  # nopep8
+        # {"role": "system", "content": EXAMPLE3_REASONING},
+        # # {"role": "assistant", "content": EXAMPLE1_OUTPUT},
         # {"role": "user", "content": EXAMPLE4},
-        # {"role": "system", "content": EXAMPLE4_REASONING},  # nopep8
-        # # {"role": "assistant", "content": EXAMPLE2_OUTPUT},  # nopep8
+        # {"role": "system", "content": EXAMPLE4_REASONING},
+        # # {"role": "assistant", "content": EXAMPLE2_OUTPUT},
         {"role": "user", "content": f">>>>>{personal_information}<<<<<"}
     ]
 

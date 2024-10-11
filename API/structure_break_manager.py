@@ -3,7 +3,7 @@ from openai import OpenAI
 
 from open_ai_singleton import OpenAISingleton
 
-memory_categories_explanations = open("memory_categories_explanations.txt", "r").read()  # nopep8
+memory_categories_explanations = open("memory_categories_explanations.txt", "r").read()
 STRUCTURE_BREAKER_SYSTEM_ROLE = """
 ### Important information ###
 - Date format is "DD/MM/YYYY".
@@ -41,13 +41,13 @@ def break_structure(prompt: str) -> dict:
     messages = [
         # {"role": "system", "content": f"""Today's date is {TODAY}."""},
         {"role": "system", "content": STRUCTURE_BREAKER_SYSTEM_ROLE},
-        {"role": "system", "content": f"!!!!!{memory_categories_explanations}!!!!!"},  # nopep8
+        {"role": "system", "content": f"!!!!!{memory_categories_explanations}!!!!!"},
         # {"role": "user", "content": EXAMPLE3},
-        # {"role": "system", "content": EXAMPLE3_REASONING},  # nopep8
-        # # {"role": "assistant", "content": EXAMPLE1_OUTPUT},  # nopep8
+        # {"role": "system", "content": EXAMPLE3_REASONING},
+        # # {"role": "assistant", "content": EXAMPLE1_OUTPUT},
         # {"role": "user", "content": EXAMPLE4},
-        # {"role": "system", "content": EXAMPLE4_REASONING},  # nopep8
-        # # {"role": "assistant", "content": EXAMPLE2_OUTPUT},  # nopep8
+        # {"role": "system", "content": EXAMPLE4_REASONING},
+        # # {"role": "assistant", "content": EXAMPLE2_OUTPUT},
         {"role": "user", "content": f">>>>>{prompt}<<<<<"}
     ]
 

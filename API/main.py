@@ -47,7 +47,7 @@ def main():
         # also provide a paragraph of your insights about the tasks and the expected outcome of the tasks?"""
 
         # get all calendar events from today to next weekend
-        # events = get_all_events_from_today_up_to_certain_date(get_Xth_saturday_from_date(1))  # nopep8
+        # events = get_all_events_from_today_up_to_certain_date(get_Xth_saturday_from_date(1))
         # put it in a json FILE
         # with open("omeromeromer.json", "w") as f:
         #     json.dump(events, f, indent=4, ensure_ascii=False)
