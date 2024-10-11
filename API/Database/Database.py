@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from time import sleep
 from typing import Literal
@@ -11,7 +12,10 @@ class Database:
     # https://console.firebase.google.com/u/0/project/jarvis-15883/database/jarvis-15883-default-rtdb/data
 
     def __init__(self):
-        cred = credentials.Certificate("credentials.json")
+        with open('../../config.json') as config_file:
+            config = json.load(config_file)
+
+        cred = credentials.Certificate(config["FIREBASE_CREDENTIALS_JSON"])
         firebase_admin.initialize_app(cred, {
             "databaseURL": "https://jarvis-15883-default-rtdb.europe-west1.firebasedatabase.app"
         })
@@ -77,11 +81,11 @@ class Database:
 
 if __name__ == "__main__":
     db = Database()
-    db.create_user("Demo")
+    db.create_user("Demo2")
     sleep(2)
-    db.update_user_memory("Demo", "Personal details", "I am a human")
+    db.update_user_memory("Demo2", "Personal details", "I am a human")
     sleep(2)
-    db.update_user_history("Demo", "User", "Hi assistant!")
+    db.update_user_history("Demo2", "User", "Hi assistant!")
     # sleep
     sleep(2)
-    db.update_user_history("Demo", "Assistant", "Hi User!")
+    db.update_user_history("Demo2", "Assistant", "Hi User!")

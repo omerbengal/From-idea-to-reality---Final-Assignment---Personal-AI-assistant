@@ -1,4 +1,6 @@
 # if using mac, need to perform: "brew install ffmpeg"
+import json
+
 from moviepy.editor import ImageSequenceClip
 import requests
 import re
@@ -16,9 +18,13 @@ import os
 os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/opt/ffmpeg/bin/ffmpeg"
 
 
+with open('../config.json') as config_file:
+    config = json.load(config_file)
+
+
 # Initialize the OpenAI client
 client = OpenAI(
-    api_key="sk-dWq6WusvsEyySkgOjUa3ZUUv6LadNaNeCs35GZ8H6sT3BlbkFJMWTn7nLmAo0GH4S9F6DxAwwd5l8lxL49oeJCIAH8EA"
+    api_key=config["openai_api_key"]
 )
 
 

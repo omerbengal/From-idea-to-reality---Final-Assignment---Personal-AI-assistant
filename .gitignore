@@ -6,3 +6,5 @@
 *.docx
 *.xlsx
 .idea/
+config.json
+**/google_credentials.json
