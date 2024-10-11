@@ -11,3 +11,5 @@ pillow~=10.4.0
 numpy~=2.1.1
 moviepy~=1.0.3
 imageio-ffmpeg~=0.5.1
+ffmpeg-python~=0.2.0
+firebase-admin~=6.5.0
