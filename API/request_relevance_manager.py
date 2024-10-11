@@ -21,7 +21,7 @@ Your task is to analyze the request and to classify if it is relevant to the AI 
 
 ### Request relevance classification ###
 The role of the AI personal assistant is to help the user to manage his busy life.
-This could be related to the user's tasks and calendar events, life habits, preferences, goals, future plans, interests, hobbies, personality, values, emotions, feelings, thoughts, ideas, and relationships.
+This could be related to the user's tasks and calendar events, life habits, goals, future plans, interests, hobbies, personality, values, emotions, feelings, thoughts, ideas, and relationships.
 Thus, any request that is not related to these areas of knowledge is not relevant to the AI personal assistant's role.
  
 ### Memory ###

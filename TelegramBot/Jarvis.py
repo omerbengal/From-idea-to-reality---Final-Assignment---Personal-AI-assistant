@@ -18,7 +18,8 @@ os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/opt/ffmpeg/bin/ffmpeg"
 
 # Initialize the OpenAI client
 client = OpenAI(
-    api_key="sk-dWq6WusvsEyySkgOjUa3ZUUv6LadNaNeCs35GZ8H6sT3BlbkFJMWTn7nLmAo0GH4S9F6DxAwwd5l8lxL49oeJCIAH8EA")
+    api_key="sk-dWq6WusvsEyySkgOjUa3ZUUv6LadNaNeCs35GZ8H6sT3BlbkFJMWTn7nLmAo0GH4S9F6DxAwwd5l8lxL49oeJCIAH8EA"
+)
 
 
 # Constants
