@@ -24,12 +24,12 @@ with open('../config.json') as config_file:
 
 # Initialize the OpenAI client
 client = OpenAI(
-    api_key=config["openai_api_key"]
+    api_key=config["OPEN_AI_API_KEY"]
 )
 
 
 # Constants
-BOT_TOKEN = '7031319241:AAFkaIQ9kXdO4BNuOJUVlleyt40JHr1kR14'
+BOT_TOKEN = config["TELEGRAM_BOT_TOKEN"]
 VIDEO_PATH = "../BirthdayCardGenerator/birthday_card.mp4"
 TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
 VOICE_DOWNLOAD_PATH = "./voice_messages/"

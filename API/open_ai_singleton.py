@@ -10,7 +10,7 @@ class OpenAISingleton:
     with open('../config.json') as config_file:
         config = json.load(config_file)
 
-    _api_key = config["openai_api_key"]
+    _api_key = config["OPEN_AI_API_KEY"]
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:

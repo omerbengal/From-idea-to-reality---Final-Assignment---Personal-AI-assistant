@@ -12,7 +12,7 @@ class Database:
     # https://console.firebase.google.com/u/0/project/jarvis-15883/database/jarvis-15883-default-rtdb/data
 
     def __init__(self):
-        with open('../../config.json') as config_file:
+        with open('../config.json') as config_file:
             config = json.load(config_file)
 
         cred = credentials.Certificate(config["FIREBASE_CREDENTIALS_JSON"])
