@@ -18,7 +18,8 @@ import os
 os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/opt/ffmpeg/bin/ffmpeg"
 
 
-with open('../config.json') as config_file:
+# with open('../config.json') as config_file:
+with open('./config.json') as config_file:
     config = json.load(config_file)
 
 
@@ -119,7 +120,10 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Responses
 def handle_response(text: str) -> str:
     response = requests.get(f"http://127.0.0.1:8000/Jarvis?request={text}")
-    return response.text.strip('"')  # Clean up the response text
+    # return response.text.strip('"')  # Clean up the response text
+    response_text = response.text.strip('"')
+    formatted_response = response_text.replace("\\n", "\n")
+    return formatted_response
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):

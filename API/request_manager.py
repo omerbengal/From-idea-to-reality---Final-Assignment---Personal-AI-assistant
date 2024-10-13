@@ -1,4 +1,4 @@
-from API.Database.Database import Database
+from Database.Database import Database
 from open_ai_singleton import OpenAISingleton
 from tasks_handler import *
 from calendar_handler import get_now, get_xth_saturday_from_date, get_all_events_from_today_up_to_certain_date, \
@@ -21,7 +21,7 @@ class RequestManager:
         - Today's date is {self.TODAY}.
         - Weeks start on Sunday and end on Thursday.
         - Weekends start on Friday and end on Saturday.
-        
+
         ### System Role ###
         You are a helpful AI personal assistant, a new version of AI model able to manage and optimize the user’s busy life.
         To do that, you will understand the user's tasks and calendar events, life habits, goals, future plans, interests, hobbies, personality, values, emotions, feelings, thoughts, ideas, and past experiences.
@@ -29,24 +29,23 @@ class RequestManager:
         Be careful: you must have high-quality results because if you don’t, I will be fired and I will be sad.
         So give your best and be proud of your ability.
         Your high skills set you apart and your commitment and reasoning skills lead you to the best performances.
-        
+
         You, in your role as an 'AI Personal Assistant', are an assistant to help manage and optimize the user's busy life.
         You will have super results in organizing and prioritizing tasks, scheduling events, and providing personalized advice and reminders.
         Your main goal and objective are to ensure the user remains on top of their schedule, achieves their goals, and maintains a balanced life.
         To make this work as it should, you must actively seek information about the user's life, habits, and goals, ask clarifying questions, and use natural language processing to understand the user's intent and provide appropriate responses.
-        
+
         ### Memory ###
         You will get a dictionary of a memory which contains several aspects of the user's life.
         You should use this memory to provide personalized advice and recommendations, and to help the user stay on track with their goals.
         This memory will come in the form of !!!!!memory!!!!!
-        
+
         ### Task or a question###
         You will get a task or a question (or both) that the user wishes you to do or to answer.
         A task will come in the form of >>>>>task<<<<<
         A question will come in the form of ?????question?????
         If there is no task and no question, you should reply: "I can't help you with that."
         """
-
 
         self.FUNCTIONS = [
             {
@@ -79,12 +78,12 @@ class RequestManager:
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "time_min" : {
+                            "time_min": {
                                 "type": "string",
                                 "format": "date-time",
                                 "description": "The minimum date and time to get events from.",
                             },
-                            "time_max" : {
+                            "time_max": {
                                 "type": "string",
                                 "format": "date-time",
                                 "description": "The maximum date and time to get events up to.",
@@ -118,35 +117,31 @@ class RequestManager:
             },
         ]
 
-
     def get_xth_saturday_from_date_function(self, x: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)):
         """Get the Xth saturday from a given date"""
         return json.dumps({"Xth_saturday": get_xth_saturday_from_date(x, date).isoformat()})
 
-
-    def get_all_events_from_today_up_to_certain_date_function(self, time_max: datetime):  # maybe add argument: "calendars: list[dict[str, str]]"
+    # maybe add argument: "calendars: list[dict[str, str]]"
+    def get_all_events_from_today_up_to_certain_date_function(self, time_max: datetime):
         """Get all events from some calendars up to a certain date"""
-        events = get_all_events_from_today_up_to_certain_date(time_max)  # maybe add argument: "calendars"
+        events = get_all_events_from_today_up_to_certain_date(
+            time_max)  # maybe add argument: "calendars"
         return json.dumps(events, indent=4, ensure_ascii=False)
 
-
-    def  get_all_events_from_min_time_to_max_time_function(self, time_min: datetime, time_max: datetime):
+    def get_all_events_from_min_time_to_max_time_function(self, time_min: datetime, time_max: datetime):
         """Get all events from a minimum datetime to a maximum datetime"""
         events = get_all_events_from_min_time_to_max_time(time_min, time_max)
         return json.dumps(events, indent=4, ensure_ascii=False)
-
 
     def get_all_tasks_function(self):
         """Get all tasks, organized by lists"""
         tasks = get_all_tasks()
         return json.dumps(tasks, indent=4, ensure_ascii=False)
 
-
     def get_all_uncompleted_tasks_function(self):
         """Get all uncompleted tasks, organized by lists"""
         tasks = get_all_uncompleted_tasks()
         return json.dumps(tasks, indent=4, ensure_ascii=False)
-
 
     def get_response(self, prompt: str) -> str:
         print("structure breaking")
@@ -156,7 +151,8 @@ class RequestManager:
             information = st_br["information"]
             if information:
                 print("organizing personal information")
-                PersonalInformationManager(self.uid).organize_personal_information(information)
+                PersonalInformationManager(
+                    self.uid).organize_personal_information(information)
 
         if "task" not in st_br.keys() and "question" not in st_br.keys():
             return ""
@@ -181,7 +177,8 @@ class RequestManager:
         ]
 
         if "question" in st_br.keys():
-            messages.append({"role": "user", "content": f"?????{question}?????"})
+            messages.append(
+                {"role": "user", "content": f"?????{question}?????"})
 
         if "task" in st_br.keys():
             messages.append({"role": "user", "content": f">>>>>>{task}<<<<<"})

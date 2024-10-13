@@ -1,6 +1,6 @@
 from urllib.parse import unquote
 
-from API.request_manager import RequestManager
+from request_manager import RequestManager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -19,14 +19,32 @@ app.add_middleware(
 
 
 # FastAPI routes
+# @app.get("/Jarvis")
+# def get_response_from_jarvis(request: str, uid: str) -> str:
+#     try:
+#         # url decode the request
+#         request = request.replace("%20", " ")
+#         request = unquote(request)
+
+#         # get the request
+#         response = RequestManager(uid).get_response(request)
+#         print(response)
+#         return response
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/Jarvis")
-def get_response_from_jarvis(request: str, uid: str) -> str:
+def get_response_from_jarvis(request: str, uid: str = None) -> str:
     try:
-        # url decode the request
+        # URL decode the request
         request = request.replace("%20", " ")
         request = unquote(request)
 
-        # get the request
+        # Handle cases where uid is None
+        if uid is None:
+            uid = "default_uid"  # You can assign a default value or leave it as None
+
+        # Get the request
         response = RequestManager(uid).get_response(request)
         print(response)
         return response
