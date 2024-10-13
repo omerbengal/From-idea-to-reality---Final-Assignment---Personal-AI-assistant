@@ -15,7 +15,7 @@ def get_xth_saturday_from_date(x: int, date: datetime = datetime.datetime.now(da
 
 
 def _get_all_calendars_data() -> list[dict[str, str]]:
-    results = SETUP.calendar_service.calendarList().list().execute()
+    results = SETUP.get_calendar_service().calendarList().list().execute()
     calendars_dicts = results.get("items", [])
     return calendars_dicts
 
@@ -30,7 +30,7 @@ def get_now() -> datetime:
 
 def _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id: str, time_min: datetime, time_max: datetime) -> list[dict[str, str]]:
     events_result = (
-        SETUP.calendar_service.events()
+        SETUP.get_calendar_service().events()
         .list(
             calendarId=calendar_id,
             maxResults=100,

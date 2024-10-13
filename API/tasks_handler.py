@@ -9,12 +9,12 @@ SETUP = setup.GoogleServices()
 
 
 def _get_all_tasks_lists() -> list[dict[str, str]]:
-    results = SETUP.tasks_service.tasklists().list().execute()
+    results = SETUP.get_tasks_service().tasklists().list().execute()
     return results.get("items", [])
 
 
 def _get_all_tasks_from_list(tasklistID: str) -> list[dict[str, str]]:
-    results = SETUP.tasks_service.tasks().list(tasklist=tasklistID).execute()
+    results = SETUP.get_tasks_service().tasks().list(tasklist=tasklistID).execute()
     tasks = results.get("items", [])
 
     # Clean bidirectional text
