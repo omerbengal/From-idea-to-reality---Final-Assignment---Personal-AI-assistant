@@ -37,7 +37,7 @@ def get_all_uncompleted_tasks() -> dict[str, list[dict[str, str]]]:
     tasks = get_all_tasks()
     uncompleted_tasks = {}
     for list in tasks:
-        uncompleted_tasks[list] = [task for task in tasks[list] if task["status"] != "completed"]  # nopep8
+        uncompleted_tasks[list] = [task for task in tasks[list] if task["status"] != "completed"]
     return uncompleted_tasks
 
 
@@ -57,4 +57,4 @@ def example_get_and_print_tasks_from_first_list():
         notes = task.get("notes", "")
         due = task.get("due", "")
         status = task.get("status", "")
-        print(f"title: {title}\nnotes: {notes}\ndue: {due}\nstatus: {status}\n")  # nopep8
+        print(f"title: {title}\nnotes: {notes}\ndue: {due}\nstatus: {status}\n")

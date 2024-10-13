@@ -3,8 +3,7 @@
 # from google.oauth2.credentials import Credentials
 # from google_auth_oauthlib.flow import InstalledAppFlow
 # from googleapiclient.discovery import build
-
-
+import json
 # class GoogleServices:
 #     _instance = None
 
@@ -41,7 +40,7 @@
 #                 creds.refresh(Request())
 #             else:
 #                 flow = InstalledAppFlow.from_client_secrets_file(
-#                     "credentials.json", self.SCOPES
+#                     "google_credentials.json", self.SCOPES
 #                 )
 #                 creds = flow.run_local_server(port=0)
 #             with open("token.json", "w") as token:
@@ -117,7 +116,7 @@ class GoogleServices:
                     os.remove("token.json")  # Delete invalid token file
             if not creds or not creds.valid:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    "credentials.json", self.SCOPES
+                    "google_credentials.json", self.SCOPES
                 )
                 creds = flow.run_local_server(port=0)
             if creds:

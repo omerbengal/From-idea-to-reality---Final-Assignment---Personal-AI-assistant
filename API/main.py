@@ -1,5 +1,6 @@
 from urllib.parse import unquote
-from request_manager import get_response
+
+from API.request_manager import RequestManager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -19,14 +20,14 @@ app.add_middleware(
 
 # FastAPI routes
 @app.get("/Jarvis")
-def get_response_from_jarvis(request: str) -> str:
+def get_response_from_jarvis(request: str, uid: str) -> str:
     try:
         # url decode the request
         request = request.replace("%20", " ")
         request = unquote(request)
 
         # get the request
-        response = get_response(request)
+        response = RequestManager(uid).get_response(request)
         print(response)
         return response
     except Exception as e:
@@ -47,7 +48,7 @@ def main():
         # also provide a paragraph of your insights about the tasks and the expected outcome of the tasks?"""
 
         # get all calendar events from today to next weekend
-        # events = get_all_events_from_today_up_to_certain_date(get_Xth_saturday_from_date(1))  # nopep8
+        # events = get_all_events_from_today_up_to_certain_date(get_Xth_saturday_from_date(1))
         # put it in a json FILE
         # with open("omeromeromer.json", "w") as f:
         #     json.dump(events, f, indent=4, ensure_ascii=False)
@@ -56,8 +57,8 @@ def main():
 
         # message = f"""My best friend Shaked is getting married next Tuesday. The wedding starts at 18:00. What will I be missing?"""
         # message = f"""When I ask you what is my next event on my calendar - I want you to provide the title, date, time, and duration."""
-        message = f"""What is the next event on my calendar?"""
-        response = get_response(message)
+        message = f"""How are you?"""
+        response = RequestManager("Demo").get_response(message)
         print(response)
 
         # structure_breaker = break_structure(message)

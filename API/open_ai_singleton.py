@@ -6,7 +6,11 @@ class OpenAISingleton:
     _model = "gpt-4o-mini"
     _instance = None
     _lock = threading.Lock()
-    _api_key = 'sk-dWq6WusvsEyySkgOjUa3ZUUv6LadNaNeCs35GZ8H6sT3BlbkFJMWTn7nLmAo0GH4S9F6DxAwwd5l8lxL49oeJCIAH8EA'
+
+    with open('../config.json') as config_file:
+        config = json.load(config_file)
+
+    _api_key = config["OPEN_AI_API_KEY"]
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:

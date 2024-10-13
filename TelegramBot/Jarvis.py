@@ -1,4 +1,6 @@
 # if using mac, need to perform: "brew install ffmpeg"
+import json
+
 from moviepy.editor import ImageSequenceClip
 import requests
 import re
@@ -16,19 +18,24 @@ import os
 os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/opt/ffmpeg/bin/ffmpeg"
 
 
+with open('../config.json') as config_file:
+    config = json.load(config_file)
+
+
 # Initialize the OpenAI client
 client = OpenAI(
-    api_key="sk-dWq6WusvsEyySkgOjUa3ZUUv6LadNaNeCs35GZ8H6sT3BlbkFJMWTn7nLmAo0GH4S9F6DxAwwd5l8lxL49oeJCIAH8EA")
+    api_key=config["OPEN_AI_API_KEY"]
+)
 
 
 # Constants
-BOT_TOKEN = '7031319241:AAFkaIQ9kXdO4BNuOJUVlleyt40JHr1kR14'
-# VIDEO_PATH = "../BirthdayCardGenerator/birthday_card.mp4"
-# TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
-# VOICE_DOWNLOAD_PATH = "../voice_messages/"
-VIDEO_PATH = "./BirthdayCardGenerator/birthday_card.mp4"
-TEXT_FILE_PATH = "./BirthdayCardGenerator/birthday_message.txt"
+BOT_TOKEN = config["TELEGRAM_BOT_TOKEN"]
+VIDEO_PATH = "../BirthdayCardGenerator/birthday_card.mp4"
+TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
 VOICE_DOWNLOAD_PATH = "./voice_messages/"
+# VIDEO_PATH = "./BirthdayCardGenerator/birthday_card.mp4"
+# TEXT_FILE_PATH = "./BirthdayCardGenerator/birthday_message.txt"
+# VOICE_DOWNLOAD_PATH = "./voice_messages/"
 ISRAEL_TZ = pytz.timezone('Asia/Jerusalem')
 
 
@@ -211,12 +218,12 @@ async def generate_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             return np.array(frame_array)
 
-        # images = ['../BirthdayCardGenerator/Blue.jpg', '../BirthdayCardGenerator/Green.jpg', '../BirthdayCardGenerator/Orange.jpg',
-        #           '../BirthdayCardGenerator/Pink.jpg', '../BirthdayCardGenerator/Purple.jpg', '../BirthdayCardGenerator/Red.jpg',
-        #           '../BirthdayCardGenerator/LightBlue.jpg']
-        images = ['./BirthdayCardGenerator/Blue.jpg', './BirthdayCardGenerator/Green.jpg', './BirthdayCardGenerator/Orange.jpg',
-                  './BirthdayCardGenerator/Pink.jpg', './BirthdayCardGenerator/Purple.jpg', './BirthdayCardGenerator/Red.jpg',
-                  './BirthdayCardGenerator/LightBlue.jpg']
+        images = ['../BirthdayCardGenerator/Blue.jpg', '../BirthdayCardGenerator/Green.jpg', '../BirthdayCardGenerator/Orange.jpg',
+                  '../BirthdayCardGenerator/Pink.jpg', '../BirthdayCardGenerator/Purple.jpg', '../BirthdayCardGenerator/Red.jpg',
+                  '../BirthdayCardGenerator/LightBlue.jpg']
+        # images = ['./BirthdayCardGenerator/Blue.jpg', './BirthdayCardGenerator/Green.jpg', './BirthdayCardGenerator/Orange.jpg',
+        #           './BirthdayCardGenerator/Pink.jpg', './BirthdayCardGenerator/Purple.jpg', './BirthdayCardGenerator/Red.jpg',
+        #           './BirthdayCardGenerator/LightBlue.jpg']
         base_image = Image.open(random.choice(images))
 
         draw = ImageDraw.Draw(base_image)
