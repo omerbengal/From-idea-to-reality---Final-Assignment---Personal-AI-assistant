@@ -1,9 +1,15 @@
+import sys
+import os
 from urllib.parse import unquote
+
 from GoogleServices.google_services_factory import GoogleServicesFactory
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from request_manager import RequestManager
 
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from API.Database.Database import Database
 
 # FastAPI setup
 app = FastAPI()
@@ -25,9 +31,15 @@ def get_response(request: str, uid: str) -> str:
         request = request.replace("%20", " ")
         request = unquote(request)
 
-        # get the request
+        # update the user history with the user's request
+        Database().update_user_history(uid, "User", request)
+
+        # get the assistant's response
         response = RequestManager(uid).get_response(request)
-        print(response)
+
+        # update the user history with the assistant's response
+        Database().update_user_history(uid, "Assistant", response)
+
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

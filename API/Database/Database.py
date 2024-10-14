@@ -62,6 +62,7 @@ class Database:
                     "Ideas And Thoughts": ""
                 },
                 "History": "",
+                "google_token": ""
             })
 
     def get_user_memory(self, uid: str):
@@ -88,4 +89,4 @@ class Database:
 
 if __name__ == "__main__":
     db = Database()
-    db.update("Users/Demo", "google_token", "")
+    db.create_user("Demo")

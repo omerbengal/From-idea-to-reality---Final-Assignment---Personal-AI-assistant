@@ -115,6 +115,7 @@ class RequestManager:
             },
         ]
 
+
     def get_xth_saturday_from_date_function(self, x: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)):
         """Get the Xth saturday from a given date"""
         return json.dumps({"Xth_saturday": get_xth_saturday_from_date(x, date).isoformat()})
@@ -128,7 +129,6 @@ class RequestManager:
 
     def get_all_events_from_min_time_to_max_time_function(self, time_min: datetime, time_max: datetime,):
         """Get all events from a minimum datetime to a maximum datetime"""
-        print("Im here with uid: " + self.uid)
         events = get_all_events_from_min_time_to_max_time(
             time_min, time_max, self.uid)
         return json.dumps(events, indent=4, ensure_ascii=False)
@@ -151,18 +151,18 @@ class RequestManager:
             information = st_br["information"]
             if information:
                 print("organizing personal information")
-                PersonalInformationManager(
-                    self.uid).organize_personal_information(information)
+                PersonalInformationManager(self.uid).organize_personal_information(information)
 
-        if "task" not in st_br.keys():
+        task = st_br["task"]
+
+        if task == "":
             if "information" in st_br.keys():
                 return "There seems to be no task in your request, but I have organized your personal information."
             else:
                 return "There seems to be no task in your request. So I can't help you with that."
 
         # If we reach here - there exists a task!
-
-        task = st_br["task"]
+        print("task is: "+ task)
 
         # print("classifying relevance")
         # # relevant = classify_relevance(task)
