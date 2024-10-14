@@ -489,19 +489,17 @@ class GoogleServices:
         if not google_credentials:
             raise Exception("Google credentials not found")
 
-        with open("google_credentials.json", "w") as file:
-            json.dump(google_credentials, file, indent=4)
+        # Parse the JSON string into a dictionary if it's stored as a string
+        if isinstance(google_credentials, str):
+            google_credentials = json.loads(google_credentials)
 
-        flow = Flow.from_client_secrets_file(
-            "google_credentials.json",
+        flow = Flow.from_client_config(
+            client_config=google_credentials,
             scopes=self.SCOPES,
             redirect_uri="http://localhost:8000/callback"
         )
 
         auth_url, _ = flow.authorization_url(prompt='consent')
-
-        # Delete the google_credentials.json file
-        os.remove("google_credentials.json")
 
         return auth_url
 
@@ -511,17 +509,15 @@ class GoogleServices:
         if not google_credentials:
             raise Exception("Google credentials not found")
 
-        with open("google_credentials.json", "w") as file:
-            json.dump(google_credentials, file, indent=4)
+        # Parse the JSON string into a dictionary if it's stored as a string
+        if isinstance(google_credentials, str):
+            google_credentials = json.loads(google_credentials)
 
-        flow = Flow.from_client_secrets_file(
-            "google_credentials.json",
+        flow = Flow.from_client_config(
+            client_config=google_credentials,
             scopes=self.SCOPES,
             redirect_uri="http://localhost:8000/callback"
         )
-
-        # Delete the google_credentials.json file
-        os.remove("google_credentials.json")
 
         try:
             flow.fetch_token(code=auth_code)
