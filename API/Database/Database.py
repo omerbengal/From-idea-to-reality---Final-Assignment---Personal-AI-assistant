@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from time import sleep
 from typing import Literal
 import firebase_admin
 from firebase_admin import db, credentials
@@ -10,7 +9,15 @@ class Database:
 
     # https://console.firebase.google.com/u/0/project/jarvis-15883/database/jarvis-15883-default-rtdb/data
 
-    def __init__(self):
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(Database, cls).__new__(cls)
+            cls._instance._initialize()
+        return cls._instance
+
+    def _initialize(self):
         if not firebase_admin._apps:
             with open('../config.json') as config_file:
                 config = json.load(config_file)

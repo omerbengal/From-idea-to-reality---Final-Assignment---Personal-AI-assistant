@@ -1,5 +1,5 @@
 from open_ai_singleton import OpenAISingleton
-from calendar_handler import *
+from API.GoogleServices.calendar_handler import *
 from memory_handler import *
 from Database.Database import Database
 

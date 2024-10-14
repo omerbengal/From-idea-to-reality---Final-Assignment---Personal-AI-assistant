@@ -1,11 +1,10 @@
 from Database.Database import Database
 from open_ai_singleton import OpenAISingleton
-from tasks_handler import *
-from calendar_handler import get_now, get_xth_saturday_from_date, get_all_events_from_today_up_to_certain_date, \
+from API.GoogleServices.tasks_handler import *
+from API.GoogleServices.calendar_handler import get_now, get_xth_saturday_from_date, get_all_events_from_today_up_to_certain_date, \
     get_all_events_from_min_time_to_max_time
 from structure_break_manager import StructureBreakManager
 from personal_information_manager import PersonalInformationManager
-from request_relevance_manager import classify_relevance
 import json
 import datetime
 

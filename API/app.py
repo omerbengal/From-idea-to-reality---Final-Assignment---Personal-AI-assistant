@@ -1,8 +1,5 @@
-from urllib.parse import unquote
-
-from setup import GoogleServices
-from request_manager import RequestManager
-from fastapi import FastAPI, HTTPException
+from GoogleServices.google_services_factory import GoogleServicesFactory
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # FastAPI setup
@@ -31,8 +28,13 @@ def get_response_from_jarvis(request: str, uid: str) -> str:
     #     return response
     # except Exception as e:
     #     raise HTTPException(status_code=500, detail=str(e))
-    return GoogleServices(uid).start_auth_flow()
+    google_services = GoogleServicesFactory().get_instance(uid)
+    auth_url = google_services.start_auth_flow()
+    GoogleServicesFactory.release_instance(uid)
+    return auth_url
 
 @app.get("/Jarvis/auth")
 def auth(uid: str, code: str):
-    GoogleServices(uid).finish_auth_flow(code)
+    google_services = GoogleServicesFactory().get_instance(uid)
+    google_services.finish_auth_flow(code)
+    GoogleServicesFactory.release_instance(uid)

@@ -1,6 +1,7 @@
 import datetime
-from setup import GoogleServices
-from utilities import *
+
+from google_services_factory import GoogleServicesFactory
+from API.utilities import *
 
 
 def get_xth_saturday_from_date(x: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> datetime:
@@ -10,8 +11,10 @@ def get_xth_saturday_from_date(x: int, date: datetime = datetime.datetime.now(da
 
 
 def _get_all_calendars_data(uid: str) -> list[dict[str, str]]:
-    print("lololololol")
-    results = GoogleServices(uid).get_calendar_service().calendarList().list().execute()
+    google_services = GoogleServicesFactory().get_instance(uid)
+    results = google_services.get_calendar_service().calendarList().list().execute()
+    GoogleServicesFactory.release_instance(uid)
+
     calendars_dicts = results.get("items", [])
     return calendars_dicts
 
@@ -25,8 +28,9 @@ def get_now() -> datetime:
 
 
 def _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id: str, time_min: datetime, time_max: datetime, uid: str) -> list[dict[str, str]]:
+    google_services = GoogleServicesFactory().get_instance(uid)
     events_result = (
-        GoogleServices(uid).get_calendar_service().events()
+        google_services.get_calendar_service().events()
         .list(
             calendarId=calendar_id,
             maxResults=100,
@@ -37,6 +41,8 @@ def _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id
         )
         .execute()
     )
+    GoogleServicesFactory.release_instance(uid)
+
     events = events_result.get("items", [])
 
     for event in events:
