@@ -1,20 +1,14 @@
-import json
-from typing import Dict, List
-
-import setup
+from  setup import GoogleServices
 from utilities import *
 
 
-SETUP = setup.GoogleServices()
-
-
-def _get_all_tasks_lists() -> list[dict[str, str]]:
-    results = SETUP.get_tasks_service().tasklists().list().execute()
+def _get_all_tasks_lists(uid: str) -> list[dict[str, str]]:
+    results = GoogleServices(uid).get_tasks_service().tasklists().list().execute()
     return results.get("items", [])
 
 
-def _get_all_tasks_from_list(tasklistID: str) -> list[dict[str, str]]:
-    results = SETUP.get_tasks_service().tasks().list(tasklist=tasklistID).execute()
+def _get_all_tasks_from_list(tasklistID: str, uid: str) -> list[dict[str, str]]:
+    results = GoogleServices(uid).get_tasks_service().tasks().list(tasklist=tasklistID).execute()
     tasks = results.get("items", [])
 
     # Clean bidirectional text
@@ -25,36 +19,17 @@ def _get_all_tasks_from_list(tasklistID: str) -> list[dict[str, str]]:
     return tasks
 
 
-def get_all_tasks() -> dict[str, list[dict[str, str]]]:
-    lists = _get_all_tasks_lists()
+def get_all_tasks(uid: str) -> dict[str, list[dict[str, str]]]:
+    lists = _get_all_tasks_lists(uid)
     tasks = {}
     for list in lists:
-        tasks[list["title"]] = _get_all_tasks_from_list(list["id"])
+        tasks[list["title"]] = _get_all_tasks_from_list(list["id"], uid)
     return tasks
 
 
-def get_all_uncompleted_tasks() -> dict[str, list[dict[str, str]]]:
-    tasks = get_all_tasks()
+def get_all_uncompleted_tasks(uid: str) -> dict[str, list[dict[str, str]]]:
+    tasks = get_all_tasks(uid)
     uncompleted_tasks = {}
     for list in tasks:
         uncompleted_tasks[list] = [task for task in tasks[list] if task["status"] != "completed"]
     return uncompleted_tasks
-
-
-def example_get_and_print_tasks_from_first_list():
-    tasks_lists = _get_all_tasks_lists()  # get all tasks lists # nopep8
-
-    # print all tasks lists
-    # for list in tasks_lists:
-    #     print(f"{list['title']} ({list['id']})")
-
-    # print() # spacing # nopep8
-
-    tasks = _get_all_tasks_from_list(tasks_lists[0]["id"])
-
-    for task in tasks:
-        title = task["title"]
-        notes = task.get("notes", "")
-        due = task.get("due", "")
-        status = task.get("status", "")
-        print(f"title: {title}\nnotes: {notes}\ndue: {due}\nstatus: {status}\n")

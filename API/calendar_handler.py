@@ -1,11 +1,6 @@
 import datetime
-import json
-
-import setup
+from setup import GoogleServices
 from utilities import *
-
-
-SETUP = setup.GoogleServices()
 
 
 def get_xth_saturday_from_date(x: int, date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> datetime:
@@ -14,8 +9,9 @@ def get_xth_saturday_from_date(x: int, date: datetime = datetime.datetime.now(da
     return add_days_to_date(date, days_from_today_to_x_saturday)
 
 
-def _get_all_calendars_data() -> list[dict[str, str]]:
-    results = SETUP.get_calendar_service().calendarList().list().execute()
+def _get_all_calendars_data(uid: str) -> list[dict[str, str]]:
+    print("lololololol")
+    results = GoogleServices(uid).get_calendar_service().calendarList().list().execute()
     calendars_dicts = results.get("items", [])
     return calendars_dicts
 
@@ -28,9 +24,9 @@ def get_now() -> datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id: str, time_min: datetime, time_max: datetime) -> list[dict[str, str]]:
+def _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id: str, time_min: datetime, time_max: datetime, uid: str) -> list[dict[str, str]]:
     events_result = (
-        SETUP.get_calendar_service().events()
+        GoogleServices(uid).get_calendar_service().events()
         .list(
             calendarId=calendar_id,
             maxResults=100,
@@ -53,48 +49,31 @@ def _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id
     return events
 
 
-def _get_all_events_from_specific_calendar_up_to_certain_date(calendar_id: str, time_max: datetime) -> list[dict[str, str]]:
+def _get_all_events_from_specific_calendar_up_to_certain_date(calendar_id: str, time_max: datetime, uid: str) -> list[dict[str, str]]:
     now = get_now()
 
     # Convert time_max to datetime if it's a string
     if isinstance(time_max, str):
         time_max = datetime.datetime.fromisoformat(time_max)
 
-    return _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id, now, time_max)
+    return _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id, now, time_max, uid)
 
 
-def get_all_events_from_min_time_to_max_time(time_min: datetime, time_max: datetime) -> dict[str, list[dict[str, str]]]:
+def get_all_events_from_min_time_to_max_time(time_min: datetime, time_max: datetime, uid: str) -> dict[str, list[dict[str, str]]]:
     events = {}
-    calendars = _get_all_calendars_data()
+    calendars = _get_all_calendars_data(uid)
     for calendar in calendars:
         calendar_id = calendar["id"]
         calendar_title = calendar["summary"]
-        events[calendar_title] = _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id, time_min, time_max)
+        events[calendar_title] = _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id, time_min, time_max, uid)
     return events
 
 
-def get_all_events_from_today_up_to_certain_date(time_max: datetime) -> dict[str, list[dict[str, str]]]:
+def get_all_events_from_today_up_to_certain_date(time_max: datetime, uid: str) -> dict[str, list[dict[str, str]]]:
     events = {}
-    calendars = _get_all_calendars_data()
+    calendars = _get_all_calendars_data(uid)
     for calendar in calendars:
         calendar_id = calendar["id"]
         calendar_title = calendar["summary"]
-        events[calendar_title] = _get_all_events_from_specific_calendar_up_to_certain_date(calendar_id, time_max)
+        events[calendar_title] = _get_all_events_from_specific_calendar_up_to_certain_date(calendar_id, time_max, uid)
     return events
-
-
-def example_get_and_print_events_from_primary_calendar_from_toady_up_to_nearest_saturday():
-    events = _get_all_events_from_specific_calendar_up_to_certain_date("primary", get_xth_saturday_from_date(0))
-
-    if not events:
-        print("No upcoming events found.")
-
-    for event in events:
-        title = event.get("summary", "")
-        begda = event.get("start", {}).get("dateTime", "")
-        endda = event.get("end", {}).get("dateTime", "")
-        status = event.get("status", "")  # confirmed, tentative, cancelled # nopep8
-        description = event.get("description", "")
-        location = event.get("location", "")
-
-        print(f"title: {title}\nbegda: {begda}\nendda: {endda}\nstatus: {status}\ndescription: {description}\nlocation: {location}\n")
