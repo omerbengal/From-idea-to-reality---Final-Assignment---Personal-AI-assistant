@@ -1,8 +1,6 @@
 import json
 from datetime import datetime
-from time import sleep
 from typing import Literal
-
 import firebase_admin
 from firebase_admin import db, credentials
 
@@ -11,7 +9,15 @@ class Database:
 
     # https://console.firebase.google.com/u/0/project/jarvis-15883/database/jarvis-15883-default-rtdb/data
 
-    def __init__(self):
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(Database, cls).__new__(cls)
+            cls._instance._initialize()
+        return cls._instance
+
+    def _initialize(self):
         if not firebase_admin._apps:
             with open('../config.json') as config_file:
                 config = json.load(config_file)
@@ -67,6 +73,9 @@ class Database:
         self.update("Users/" + uid + "/Memory/" +
                     category, timestamp, memory_instance)
 
+        self.update("Users/" + uid + "/Memory/" +
+                    category, timestamp, memory_instance)
+
     def get_user_history(self, uid: str):
         return self.get("Users/" + uid + "/History")
 
@@ -79,11 +88,4 @@ class Database:
 
 if __name__ == "__main__":
     db = Database()
-    db.create_user("Demo2")
-    sleep(2)
-    db.update_user_memory("Demo2", "Personal details", "I am a human")
-    sleep(2)
-    db.update_user_history("Demo2", "User", "Hi assistant!")
-    # sleep
-    sleep(2)
-    db.update_user_history("Demo2", "Assistant", "Hi User!")
+    db.update("Users/Demo", "google_token", "")

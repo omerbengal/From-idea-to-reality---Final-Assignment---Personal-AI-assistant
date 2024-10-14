@@ -1,55 +1,4 @@
-from urllib.parse import unquote
-
 from request_manager import RequestManager
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-
-
-# FastAPI setup
-app = FastAPI()
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
-    allow_credentials=True,
-    # Allows all methods, including GET, POST, PUT, DELETE, etc.
-    allow_methods=["*"],
-    allow_headers=["*"],  # Allows all headers
-)
-
-
-# FastAPI routes
-# @app.get("/Jarvis")
-# def get_response_from_jarvis(request: str, uid: str) -> str:
-#     try:
-#         # url decode the request
-#         request = request.replace("%20", " ")
-#         request = unquote(request)
-
-#         # get the request
-#         response = RequestManager(uid).get_response(request)
-#         print(response)
-#         return response
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/Jarvis")
-def get_response_from_jarvis(request: str, uid: str = None) -> str:
-    try:
-        # URL decode the request
-        request = request.replace("%20", " ")
-        request = unquote(request)
-
-        # Handle cases where uid is None
-        if uid is None:
-            uid = "default_uid"  # You can assign a default value or leave it as None
-
-        # Get the request
-        response = RequestManager(uid).get_response(request)
-        print(response)
-        return response
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 def main():
@@ -75,7 +24,7 @@ def main():
 
         # message = f"""My best friend Shaked is getting married next Tuesday. The wedding starts at 18:00. What will I be missing?"""
         # message = f"""When I ask you what is my next event on my calendar - I want you to provide the title, date, time, and duration."""
-        message = f"""How are you?"""
+        message = f"""What are my next 3 events on my calendar?"""
         response = RequestManager("Demo").get_response(message)
         print(response)
 

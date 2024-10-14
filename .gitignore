@@ -8,3 +8,6 @@
 .idea/
 config.json
 **/google_credentials.json
+venv/
+.DS_Store
+.venv/

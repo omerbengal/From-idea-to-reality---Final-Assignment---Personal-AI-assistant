@@ -39,7 +39,7 @@ class OpenAISingleton:
 
             print(f"checking if need to use tools")
             counter = 0
-            while tool_calls:
+            while tool_calls and counter < 3:
                 counter += 1
                 print(f"I'm using tools now! ({counter})")
                 messages.append(response_message)

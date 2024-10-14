@@ -116,7 +116,8 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Responses
 def handle_response(text: str) -> str:
-    response = requests.get(f"http://127.0.0.1:8000/Jarvis?request={text}")
+    response = requests.get(
+        f"http://127.0.0.1:8000/Jarvis/get_response?request={text}")
     # return response.text.strip('"')  # Clean up the response text
     response_text = response.text.strip('"')
     formatted_response = response_text.replace("\\n", "\n")

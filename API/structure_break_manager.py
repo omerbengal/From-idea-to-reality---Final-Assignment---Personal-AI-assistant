@@ -25,14 +25,12 @@ class StructureBreakManager:
         The prompt can potentially contain one or more of the following ideas:
         - Some personal information about the user's life.
         - A task for the AI personal assistant to do.
-        - A question or a request for information.
         
         ### Output ###
         You will analyze the prompt and provide a dictionary with the following structure:
         {
             "information": <List of information items - each one is a string>,
             "task": <The task to do - a string>
-            "question": <The question or request for information - a string>
         }
         
         ### Personal information instructions ###
@@ -41,9 +39,8 @@ class StructureBreakManager:
         
         ### General instructions ###
         - Make sure to only use double quotes.
-        - You must never alter the task, question or the information in the prompt.
+        - You must never alter the task or the information in the prompt.
         - If there is no task - return an empty string.
-        - If there is no question - return an empty string.
         """
 
 
