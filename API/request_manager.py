@@ -1,4 +1,4 @@
-from API.Database.Database import Database
+from Database.Database import Database
 from open_ai_singleton import OpenAISingleton
 from tasks_handler import *
 from calendar_handler import get_now, get_xth_saturday_from_date, get_all_events_from_today_up_to_certain_date, \
@@ -40,11 +40,10 @@ class RequestManager:
         You should use this memory to provide personalized advice and recommendations, and to help the user stay on track with their goals.
         This memory will come in the form of !!!!!memory!!!!!
         
-        ### Task or a question###
-        You will get a task or a question (or both) that the user wishes you to do or to answer.
+        ### Task ###
+        You will get a task that the user wishes you to do or to answer.
         A task will come in the form of >>>>>task<<<<<
-        A question will come in the form of ?????question?????
-        If there is no task and no question, you should reply: "I can't help you with that."
+        If the task is empty, you should reply: "I can't help you with that."
         """
 
 
@@ -126,25 +125,26 @@ class RequestManager:
 
     def get_all_events_from_today_up_to_certain_date_function(self, time_max: datetime):  # maybe add argument: "calendars: list[dict[str, str]]"
         """Get all events from some calendars up to a certain date"""
-        events = get_all_events_from_today_up_to_certain_date(time_max)  # maybe add argument: "calendars"
+        events = get_all_events_from_today_up_to_certain_date(time_max, self.uid)  # maybe add argument: "calendars"
         return json.dumps(events, indent=4, ensure_ascii=False)
 
 
-    def  get_all_events_from_min_time_to_max_time_function(self, time_min: datetime, time_max: datetime):
+    def  get_all_events_from_min_time_to_max_time_function(self, time_min: datetime, time_max: datetime,):
         """Get all events from a minimum datetime to a maximum datetime"""
-        events = get_all_events_from_min_time_to_max_time(time_min, time_max)
+        print("Im here with uid: " + self.uid)
+        events = get_all_events_from_min_time_to_max_time(time_min, time_max, self.uid)
         return json.dumps(events, indent=4, ensure_ascii=False)
 
 
     def get_all_tasks_function(self):
         """Get all tasks, organized by lists"""
-        tasks = get_all_tasks()
+        tasks = get_all_tasks(self.uid)
         return json.dumps(tasks, indent=4, ensure_ascii=False)
 
 
     def get_all_uncompleted_tasks_function(self):
         """Get all uncompleted tasks, organized by lists"""
-        tasks = get_all_uncompleted_tasks()
+        tasks = get_all_uncompleted_tasks(self.uid)
         return json.dumps(tasks, indent=4, ensure_ascii=False)
 
 
@@ -158,12 +158,10 @@ class RequestManager:
                 print("organizing personal information")
                 PersonalInformationManager(self.uid).organize_personal_information(information)
 
-        if "task" not in st_br.keys() and "question" not in st_br.keys():
+        if "task" not in st_br.keys():
             return ""
 
-        if "question" in st_br.keys():
-            question = st_br["question"]
-
+        task = ""
         if "task" in st_br.keys():
             task = st_br["task"]
 
@@ -180,9 +178,6 @@ class RequestManager:
             {"role": "system", "content": f"!!!!!{updated_memory}!!!!!"}
         ]
 
-        if "question" in st_br.keys():
-            messages.append({"role": "user", "content": f"?????{question}?????"})
-
         if "task" in st_br.keys():
             messages.append({"role": "user", "content": f">>>>>>{task}<<<<<"})
 
@@ -194,7 +189,7 @@ class RequestManager:
             "get_all_uncompleted_tasks": self.get_all_uncompleted_tasks_function,
         }
 
-        print(f'messages are: {messages}')
+        # print(f'messages are: {messages}')
 
         response = OpenAISingleton().get_response_with_function_calling(
             messages=messages,
