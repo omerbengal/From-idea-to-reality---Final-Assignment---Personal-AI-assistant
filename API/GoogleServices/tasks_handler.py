@@ -1,14 +1,20 @@
-from  setup import GoogleServices
-from utilities import *
+from google_services_factory import GoogleServicesFactory
+from API.utilities import *
 
 
 def _get_all_tasks_lists(uid: str) -> list[dict[str, str]]:
-    results = GoogleServices(uid).get_tasks_service().tasklists().list().execute()
+    google_services = GoogleServicesFactory().get_instance(uid)
+    results = google_services.get_tasks_service().tasklists().list().execute()
+    GoogleServicesFactory.release_instance(uid)
+
     return results.get("items", [])
 
 
 def _get_all_tasks_from_list(tasklistID: str, uid: str) -> list[dict[str, str]]:
-    results = GoogleServices(uid).get_tasks_service().tasks().list(tasklist=tasklistID).execute()
+    google_services = GoogleServicesFactory().get_instance(uid)
+    results = google_services.get_tasks_service().tasks().list(tasklist=tasklistID).execute()
+    GoogleServicesFactory.release_instance(uid)
+
     tasks = results.get("items", [])
 
     # Clean bidirectional text
