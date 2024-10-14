@@ -158,11 +158,14 @@ class RequestManager:
                 PersonalInformationManager(self.uid).organize_personal_information(information)
 
         if "task" not in st_br.keys():
-            return ""
+            if "information" in st_br.keys():
+                return "There seems to be no task in your request, but I have organized your personal information."
+            else:
+                return "There seems to be no task in your request. So I can't help you with that."
 
-        task = ""
-        if "task" in st_br.keys():
-            task = st_br["task"]
+        # If we reach here - there exists a task!
+
+        task = st_br["task"]
 
         # print("classifying relevance")
         # # relevant = classify_relevance(task)
@@ -174,11 +177,9 @@ class RequestManager:
 
         messages = [
             {"role": "system", "content": self.AI_PERSONAL_ASSISTANT_SYSTEM_ROLE},
-            {"role": "system", "content": f"!!!!!{updated_memory}!!!!!"}
+            {"role": "system", "content": f"!!!!!{updated_memory}!!!!!"},
+            {"role": "user", "content": f">>>>>>{task}<<<<<"}
         ]
-
-        if "task" in st_br.keys():
-            messages.append({"role": "user", "content": f">>>>>>{task}<<<<<"})
 
         available_functions = {
             "get_Xth_saturday_from_date": self.get_xth_saturday_from_date_function,
@@ -187,8 +188,6 @@ class RequestManager:
             "get_all_tasks": self.get_all_tasks_function,
             "get_all_uncompleted_tasks": self.get_all_uncompleted_tasks_function,
         }
-
-        # print(f'messages are: {messages}')
 
         response = OpenAISingleton().get_response_with_function_calling(
             messages=messages,
