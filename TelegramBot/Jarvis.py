@@ -31,12 +31,12 @@ client = OpenAI(
 
 # Constants
 BOT_TOKEN = config["TELEGRAM_BOT_TOKEN"]
-VIDEO_PATH = "../BirthdayCardGenerator/birthday_card.mp4"
-TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
-VOICE_DOWNLOAD_PATH = "./voice_messages/"
-# VIDEO_PATH = "./BirthdayCardGenerator/birthday_card.mp4"
-# TEXT_FILE_PATH = "./BirthdayCardGenerator/birthday_message.txt"
+# VIDEO_PATH = "../BirthdayCardGenerator/birthday_card.mp4"
+# TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
 # VOICE_DOWNLOAD_PATH = "./voice_messages/"
+VIDEO_PATH = "./BirthdayCardGenerator/birthday_card.mp4"
+TEXT_FILE_PATH = "./BirthdayCardGenerator/birthday_message.txt"
+VOICE_DOWNLOAD_PATH = "./voice_messages/"
 ISRAEL_TZ = pytz.timezone('Asia/Jerusalem')
 
 
@@ -126,32 +126,77 @@ def handle_response(text: str) -> str:
     return formatted_response
 
 
+# async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+#     text = update.message.text
+
+#     if context.user_data.get('awaiting_name'):
+#         context.user_data['name'] = text
+#         context.user_data['awaiting_name'] = False
+
+#         await generate_birthday_text(update, context, text)
+#         await generate_video(update, context)
+#         await send_video(update, context, VIDEO_PATH)
+#     else:
+#         task, time_str = parse_reminder(text)
+
+#         if task and time_str:
+#             seconds_until_reminder = get_time_difference(time_str)
+#             if seconds_until_reminder > 0:
+#                 # Adding the job to the queue
+#                 job = context.job_queue.run_once(
+#                     send_reminder, seconds_until_reminder, chat_id=update.message.chat_id, name=f"reminder_{task}", data={"task": task})
+#                 print(job)
+#                 await update.message.reply_text(f"Reminder set for {time_str} to: {task}!!!!!!!")
+#             else:
+#                 await update.message.reply_text("The time you provided is in the past. Please provide a future time.")
+#         else:
+#             response = handle_response(text)
+#             await update.message.reply_text(response)
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
 
-    if context.user_data.get('awaiting_name'):
-        context.user_data['name'] = text
-        context.user_data['awaiting_name'] = False
+    # Send a "Loading response" message to the user and store the message object
+    loading_message = await update.message.reply_text("Loading response...")
 
-        await generate_birthday_text(update, context, text)
-        await generate_video(update, context)
-        await send_video(update, context, VIDEO_PATH)
-    else:
-        task, time_str = parse_reminder(text)
+    try:
+        if context.user_data.get('awaiting_name'):
+            context.user_data['name'] = text
+            context.user_data['awaiting_name'] = False
 
-        if task and time_str:
-            seconds_until_reminder = get_time_difference(time_str)
-            if seconds_until_reminder > 0:
-                # Adding the job to the queue
-                job = context.job_queue.run_once(
-                    send_reminder, seconds_until_reminder, chat_id=update.message.chat_id, name=f"reminder_{task}", data={"task": task})
-                print(job)
-                await update.message.reply_text(f"Reminder set for {time_str} to: {task}!!!!!!!")
-            else:
-                await update.message.reply_text("The time you provided is in the past. Please provide a future time.")
+            # Edit loading message before generating birthday text
+            await loading_message.edit_text("Generating birthday message...")
+            await generate_birthday_text(update, context, text)
+
+            # Edit loading message before generating video
+            await loading_message.edit_text("Creating birthday video...")
+            await generate_video(update, context)
+
+            # Send the video and edit the loading message again
+            await send_video(update, context, VIDEO_PATH)
+            await loading_message.edit_text("Video sent!")
+
         else:
-            response = handle_response(text)
-            await update.message.reply_text(response)
+            task, time_str = parse_reminder(text)
+
+            if task and time_str:
+                seconds_until_reminder = get_time_difference(time_str)
+                if seconds_until_reminder > 0:
+                    # Adding the job to the queue
+                    job = context.job_queue.run_once(
+                        send_reminder, seconds_until_reminder, chat_id=update.message.chat_id, name=f"reminder_{task}", data={"task": task})
+                    print(job)
+
+                    # Edit loading message before sending reminder confirmation
+                    await loading_message.edit_text(f"Reminder set for {time_str} to: {task}!")
+                else:
+                    await loading_message.edit_text("The time you provided is in the past. Please provide a future time.")
+            else:
+                # Edit loading message before handling generic response
+                response = handle_response(text)
+                await loading_message.edit_text(response)
+
+    except Exception as e:
+        await loading_message.edit_text(f"An error occurred while processing your message: {str(e)}")
 
 
 async def generate_birthday_text(update: Update, context: ContextTypes.DEFAULT_TYPE, name: str):
@@ -222,12 +267,12 @@ async def generate_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             return np.array(frame_array)
 
-        images = ['../BirthdayCardGenerator/Blue.jpg', '../BirthdayCardGenerator/Green.jpg', '../BirthdayCardGenerator/Orange.jpg',
-                  '../BirthdayCardGenerator/Pink.jpg', '../BirthdayCardGenerator/Purple.jpg', '../BirthdayCardGenerator/Red.jpg',
-                  '../BirthdayCardGenerator/LightBlue.jpg']
-        # images = ['./BirthdayCardGenerator/Blue.jpg', './BirthdayCardGenerator/Green.jpg', './BirthdayCardGenerator/Orange.jpg',
-        #           './BirthdayCardGenerator/Pink.jpg', './BirthdayCardGenerator/Purple.jpg', './BirthdayCardGenerator/Red.jpg',
-        #           './BirthdayCardGenerator/LightBlue.jpg']
+        # images = ['../BirthdayCardGenerator/Blue.jpg', '../BirthdayCardGenerator/Green.jpg', '../BirthdayCardGenerator/Orange.jpg',
+        #           '../BirthdayCardGenerator/Pink.jpg', '../BirthdayCardGenerator/Purple.jpg', '../BirthdayCardGenerator/Red.jpg',
+        #           '../BirthdayCardGenerator/LightBlue.jpg']
+        images = ['./BirthdayCardGenerator/Blue.jpg', './BirthdayCardGenerator/Green.jpg', './BirthdayCardGenerator/Orange.jpg',
+                  './BirthdayCardGenerator/Pink.jpg', './BirthdayCardGenerator/Purple.jpg', './BirthdayCardGenerator/Red.jpg',
+                  './BirthdayCardGenerator/LightBlue.jpg']
         base_image = Image.open(random.choice(images))
 
         draw = ImageDraw.Draw(base_image)
