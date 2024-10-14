@@ -2,6 +2,7 @@ import json
 import threading
 from openai import OpenAI
 
+
 class OpenAISingleton:
     _model = "gpt-4o-mini"
     _instance = None
@@ -49,10 +50,13 @@ class OpenAISingleton:
                     print(f"function name: {function_name} ({counter})")
                     function_to_call = available_functions.get(function_name)
                     if function_to_call:
-                        function_args = json.loads(tool_call.function.arguments)
-                        print(f"({counter}) calling function {function_name}, with args {function_args}")
+                        function_args = json.loads(
+                            tool_call.function.arguments)
+                        print(f"({counter}) calling function {
+                              function_name}, with args {function_args}")
                         try:
-                            function_response = function_to_call(**function_args)
+                            function_response = function_to_call(
+                                **function_args)
                             messages.append(
                                 {
                                     "tool_call_id": tool_call.id,

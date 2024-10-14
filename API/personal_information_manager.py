@@ -1,7 +1,7 @@
 from open_ai_singleton import OpenAISingleton
 from calendar_handler import *
 from memory_handler import *
-from API.Database.Database import Database
+from Database.Database import Database
 
 
 class PersonalInformationManager:
@@ -23,25 +23,24 @@ class PersonalInformationManager:
                 - Today's date is {self.TODAY}.
                 - Weeks start on Sunday and end on Thursday.
                 - Weekends start on Friday and end on Saturday.
-                
+
                 ### System Role ###
                 You are an expert details analyzer.
                 You will act as a middleman between a user and an AI personal assistant.
                 You will get a list of personal information about the user's life - this list will come in the form of >>>>>list<<<<<.
                 Your task is to analyze the list and insert each information item in the best suitable category in the memory if it is not already there.
-                
+
                 ### Personal information classification ###
                 You will get a description for each available category.
                 This description will come in the form of !!!!!category_description!!!!!.
                 You should use this explanation to classify the information you get from the user.
-                
+
                 ### General instructions ###
                 - Make sure to only use double quotes.
                 - You must never alter the content provided to you, but you can rephrase it a bit to make it more readable.
                 - The insformation list should contain only personal information of the user, and not temporary information related to the specific task the user requested.
                 - If a piece of information (or a part of it) already exists in the memory, do not add it again, but instead update the existing information.
                 """
-
 
         self.FUNCTIONS = [
             {
@@ -89,29 +88,26 @@ class PersonalInformationManager:
             },
         ]
 
-
     def get_memory_function(self):
         """Get the current memory dictionary"""
         memory = self.db.get_user_memory(self.uid)
         return json.dumps(memory, indent=4, ensure_ascii=False)
-
 
     def add_to_memory_function(self, category: str, memory_instance: str):
         """Add a string to the memory dictionary"""
         self.db.update_user_memory(self.uid, category, memory_instance)
         return json.dumps({"success": True}, indent=4, ensure_ascii=False)
 
-
     def get_memory_categories_function(self):
         """Get all categories in the memory dictionary"""
         categories = self.db.get_user_memory(self.uid).keys()
         return json.dumps(categories, indent=4, ensure_ascii=False)
 
-
     def organize_personal_information(self, personal_information: list[str]):
         messages = [
             {"role": "system", "content": self.PERSONAL_INFORMATION_MANAGER_SYSTEM_ROLE},
-            {"role": "system", "content": f"!!!!!{self.memory_categories_explanations}!!!!!"},
+            {"role": "system", "content": f"!!!!!{
+                self.memory_categories_explanations}!!!!!"},
             {"role": "user", "content": f">>>>>{personal_information}<<<<<"}
         ]
 

@@ -12,13 +12,14 @@ class Database:
     # https://console.firebase.google.com/u/0/project/jarvis-15883/database/jarvis-15883-default-rtdb/data
 
     def __init__(self):
-        with open('../config.json') as config_file:
-            config = json.load(config_file)
+        if not firebase_admin._apps:
+            with open('../config.json') as config_file:
+                config = json.load(config_file)
 
-        cred = credentials.Certificate(config["FIREBASE_CREDENTIALS_JSON"])
-        firebase_admin.initialize_app(cred, {
-            "databaseURL": "https://jarvis-15883-default-rtdb.europe-west1.firebasedatabase.app"
-        })
+            cred = credentials.Certificate(config["FIREBASE_CREDENTIALS_JSON"])
+            firebase_admin.initialize_app(cred, {
+                "databaseURL": "https://jarvis-15883-default-rtdb.europe-west1.firebasedatabase.app"
+            })
 
         self.db = db
         self.root_ref = self.db.reference("/")
@@ -40,7 +41,6 @@ class Database:
     def check_user_exists(self, uid: str):
         return self.get("Users/" + uid) is not None
 
-
     def create_user(self, uid: str):
         if not self.check_user_exists(uid):
             # The user does not exist, create it
@@ -58,25 +58,23 @@ class Database:
                 "History": "",
             })
 
-
     def get_user_memory(self, uid: str):
         return self.get("Users/" + uid + "/Memory")
-
 
     def update_user_memory(self, uid: str, category: str, memory_instance: str):
         # Now in format of "YYYYMMDDHHMMSS"
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        self.update("Users/" + uid + "/Memory/" + category, timestamp, memory_instance)
-
+        self.update("Users/" + uid + "/Memory/" +
+                    category, timestamp, memory_instance)
 
     def get_user_history(self, uid: str):
         return self.get("Users/" + uid + "/History")
 
-
     def update_user_history(self, uid: str, who_sent: Literal["Assistant", "User"], history_instance: str):
         # Now in format of "YYYYMMDDHHMMSS"
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        self.update("Users/" + uid + "/History", timestamp, {"Who sent": who_sent, "Content": history_instance})
+        self.update("Users/" + uid + "/History", timestamp,
+                    {"Who sent": who_sent, "Content": history_instance})
 
 
 if __name__ == "__main__":
