@@ -18,8 +18,8 @@ import os
 os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/opt/ffmpeg/bin/ffmpeg"
 
 
-# with open('../config.json') as config_file:
-with open('./config.json') as config_file:
+with open('../config.json') as config_file:
+    # with open('./config.json') as config_file:
     config = json.load(config_file)
 
 
@@ -31,11 +31,8 @@ client = OpenAI(
 
 # Constants
 BOT_TOKEN = config["TELEGRAM_BOT_TOKEN"]
-# VIDEO_PATH = "../BirthdayCardGenerator/birthday_card.mp4"
-# TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
-# VOICE_DOWNLOAD_PATH = "./voice_messages/"
-VIDEO_PATH = "./BirthdayCardGenerator/birthday_card.mp4"
-TEXT_FILE_PATH = "./BirthdayCardGenerator/birthday_message.txt"
+VIDEO_PATH = "../BirthdayCardGenerator/birthday_card.mp4"
+TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
 VOICE_DOWNLOAD_PATH = "./voice_messages/"
 ISRAEL_TZ = pytz.timezone('Asia/Jerusalem')
 
@@ -126,32 +123,6 @@ def handle_response(text: str) -> str:
     return formatted_response
 
 
-# async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     text = update.message.text
-
-#     if context.user_data.get('awaiting_name'):
-#         context.user_data['name'] = text
-#         context.user_data['awaiting_name'] = False
-
-#         await generate_birthday_text(update, context, text)
-#         await generate_video(update, context)
-#         await send_video(update, context, VIDEO_PATH)
-#     else:
-#         task, time_str = parse_reminder(text)
-
-#         if task and time_str:
-#             seconds_until_reminder = get_time_difference(time_str)
-#             if seconds_until_reminder > 0:
-#                 # Adding the job to the queue
-#                 job = context.job_queue.run_once(
-#                     send_reminder, seconds_until_reminder, chat_id=update.message.chat_id, name=f"reminder_{task}", data={"task": task})
-#                 print(job)
-#                 await update.message.reply_text(f"Reminder set for {time_str} to: {task}!!!!!!!")
-#             else:
-#                 await update.message.reply_text("The time you provided is in the past. Please provide a future time.")
-#         else:
-#             response = handle_response(text)
-#             await update.message.reply_text(response)
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
 
@@ -267,12 +238,9 @@ async def generate_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             return np.array(frame_array)
 
-        # images = ['../BirthdayCardGenerator/Blue.jpg', '../BirthdayCardGenerator/Green.jpg', '../BirthdayCardGenerator/Orange.jpg',
-        #           '../BirthdayCardGenerator/Pink.jpg', '../BirthdayCardGenerator/Purple.jpg', '../BirthdayCardGenerator/Red.jpg',
-        #           '../BirthdayCardGenerator/LightBlue.jpg']
-        images = ['./BirthdayCardGenerator/Blue.jpg', './BirthdayCardGenerator/Green.jpg', './BirthdayCardGenerator/Orange.jpg',
-                  './BirthdayCardGenerator/Pink.jpg', './BirthdayCardGenerator/Purple.jpg', './BirthdayCardGenerator/Red.jpg',
-                  './BirthdayCardGenerator/LightBlue.jpg']
+        images = ['../BirthdayCardGenerator/Blue.jpg', '../BirthdayCardGenerator/Green.jpg', '../BirthdayCardGenerator/Orange.jpg',
+                  '../BirthdayCardGenerator/Pink.jpg', '../BirthdayCardGenerator/Purple.jpg', '../BirthdayCardGenerator/Red.jpg',
+                  '../BirthdayCardGenerator/LightBlue.jpg']
         base_image = Image.open(random.choice(images))
 
         draw = ImageDraw.Draw(base_image)
