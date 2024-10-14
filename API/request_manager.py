@@ -147,16 +147,16 @@ class RequestManager:
         print("structure breaking")
         st_br = StructureBreakManager().break_structure(prompt)
 
-        if "information" in st_br.keys():
-            information = st_br["information"]
-            if information:
-                print("organizing personal information")
-                PersonalInformationManager(self.uid).organize_personal_information(information)
+
+        information = st_br["information"]
+        if information:
+            print("organizing personal information")
+            PersonalInformationManager(self.uid).organize_personal_information(information)
 
         task = st_br["task"]
 
         if task == "":
-            if "information" in st_br.keys():
+            if  information:
                 return "There seems to be no task in your request, but I have organized your personal information."
             else:
                 return "There seems to be no task in your request. So I can't help you with that."

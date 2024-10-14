@@ -1,6 +1,7 @@
 # if using mac, need to perform: "brew install ffmpeg"
 import json
 
+import telegram
 from moviepy.editor import ImageSequenceClip
 import requests
 import re
@@ -19,7 +20,6 @@ os.environ["IMAGEIO_FFMPEG_EXE"] = "/opt/homebrew/opt/ffmpeg/bin/ffmpeg"
 
 
 with open('../config.json') as config_file:
-    # with open('./config.json') as config_file:
     config = json.load(config_file)
 
 
@@ -70,14 +70,54 @@ os.makedirs(VOICE_DOWNLOAD_PATH, exist_ok=True)
 
 # Commands
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        'Hello, I am Jarvis, your personal assistant. I can help you with a variety of tasks and answer your questions. What can I do for you?'
-    )
+    await update.message.reply_text('Hello, I am Jarvis, your personal assistant. I can help you with a variety of tasks and answer your questions. What can I do for you?')
 
 
 async def test_video_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Please provide the name for the birthday card.")
     context.user_data['awaiting_name'] = True
+
+
+async def start_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['authenticated'] = False
+    uid = str(update.effective_user.id)
+    if uid:
+        response = requests.get(
+            f"http://127.0.0.1:8000/Jarvis/start_auth_flow?uid={uid}")
+        auth_url = response.text
+        context.user_data['awaiting_auth_code'] = True
+        await update.message.reply_text(f"Please click the following link to authenticate: {auth_url}\n\nOnce you have authenticated, please go to the url, copy the code, and send it here.")
+    else:
+        context.user_data['awaiting_auth_code'] = False
+        context.user_data['authenticated'] = False
+        await update.message.reply_text("Sorry, I couldn't find your user ID.")
+
+
+async def finish_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE, auth_code: str, loading_message: telegram.Message):
+    uid = str(update.effective_user.id)
+    if uid:
+        response = requests.get(
+            f"http://127.0.0.1:8000/Jarvis/finish_auth_flow?uid={uid}&code={auth_code}")
+        if response.text:
+            await loading_message.edit_text("Authentication was successful!\nNow checking the validity of your credentials...")
+            await setup_credentials(update, context, uid)
+        else:
+            context.user_data['authenticated'] = False
+            await loading_message.edit_text("Authentication failed. Please try again.")
+    else:
+        context.user_data['authenticated'] = False
+        await loading_message.edit_text("Sorry, I couldn't find your user ID.")
+
+
+async def setup_credentials(update: Update, context: ContextTypes.DEFAULT_TYPE, uid: str):
+    response = requests.get(
+        f"http://127.0.0.1:8000/Jarvis/setup_credentials?uid={uid}")
+    if response.text:
+        await update.message.reply_text("Credentials setup successfully!")
+        context.user_data['authenticated'] = True
+    else:
+        await update.message.reply_text("Failed to setup credentials. Please try again.")
+        context.user_data['authenticated'] = False
 
 
 # New function to handle voice messages
@@ -104,7 +144,7 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Process transcribed text
         transcribed_text = transcript.text
-        response = handle_response(transcribed_text)
+        response = handle_response(update, context, transcribed_text)
         await update.message.reply_text(response)
 
         # Clean up: delete the voice file
@@ -115,13 +155,17 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # Responses
-def handle_response(text: str) -> str:
-    response = requests.get(
-        f"http://127.0.0.1:8000/Jarvis/get_response?request={text}")
-    # return response.text.strip('"')  # Clean up the response text
-    response_text = response.text.strip('"')
-    formatted_response = response_text.replace("\\n", "\n")
-    return formatted_response
+def handle_response(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str) -> str:
+    uid = str(update.effective_user.id)
+    if uid:
+        response = requests.get(
+            f"http://127.0.0.1:8000/Jarvis/get_response?request={text}&uid={uid}")
+        # return response.text.strip('"')  # Clean up the response text
+        response_text = response.text.strip('"')
+        formatted_response = response_text.replace("\\n", "\n")
+        return formatted_response
+    else:
+        return "Sorry, I couldn't find your user ID."
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -131,8 +175,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     loading_message = await update.message.reply_text("Loading response...")
 
     try:
-        if context.user_data.get('awaiting_name'):
-            context.user_data['name'] = text
+        if context.user_data.get('awaiting_auth_code'):
+            context.user_data['awaiting_auth_code'] = False
+            await finish_auth_flow(update, context, text, loading_message)
+
+        elif context.user_data.get('awaiting_name'):
             context.user_data['awaiting_name'] = False
 
             # Edit loading message before generating birthday text
@@ -164,8 +211,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await loading_message.edit_text("The time you provided is in the past. Please provide a future time.")
             else:
                 # Edit loading message before handling generic response
-                response = handle_response(text)
-                await loading_message.edit_text(response)
+                if context.user_data.get('authenticated'):
+                    response = handle_response(update, context, text)
+                    await loading_message.edit_text(response)
+                else:
+                    await loading_message.edit_text("Sorry, you need to authenticate first. Please use the /authentication command.")
 
     except Exception as e:
         await loading_message.edit_text(f"An error occurred while processing your message: {str(e)}")
@@ -355,6 +405,7 @@ if __name__ == '__main__':
     # Handlers
     app.add_handler(CommandHandler('start', start_command))
     app.add_handler(CommandHandler('testvideo', test_video_command))
+    app.add_handler(CommandHandler('authentication', start_auth_flow))
     # Add voice handler
     app.add_handler(MessageHandler(filters.VOICE, handle_voice))
     # Add text handler

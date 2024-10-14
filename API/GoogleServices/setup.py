@@ -67,6 +67,7 @@ class GoogleServices:
             self.creds = flow.credentials
 
             if self.creds:
+                self.db.create_user(self.uid) # Create the user if it doesn't exist
                 self.db.update(f"Users/{self.uid}", "google_token", self.creds.to_json())
                 return True
             else:
@@ -77,8 +78,6 @@ class GoogleServices:
 
     def setup_credentials(self) -> bool:
         """Setup the credentials for the Google APIs."""
-        if self.creds and self.creds.valid:
-            return True
 
         user_token = self.db.get(f"Users/{self.uid}/google_token")
         if user_token:
