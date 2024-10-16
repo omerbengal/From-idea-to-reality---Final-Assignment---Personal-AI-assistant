@@ -8,7 +8,8 @@ import re
 from datetime import datetime, timedelta
 from telegram import Update
 import pytz
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import CommandHandler, MessageHandler, filters, ContextTypes, ApplicationBuilder, \
+    JobQueue
 from telegram.error import TimedOut
 from openai import OpenAI
 from PIL import Image, ImageDraw, ImageFont
@@ -400,7 +401,12 @@ async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Main
 if __name__ == '__main__':
-    app = Application.builder().token(BOT_TOKEN).build()
+    app = (
+        ApplicationBuilder()
+        .token(BOT_TOKEN)
+        .job_queue(JobQueue())
+        .build()
+    )
 
     # Handlers
     app.add_handler(CommandHandler('start', start_command))
