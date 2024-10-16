@@ -1,6 +1,11 @@
 import datetime
+import sys
+import os
 
-from google_services_factory import GoogleServicesFactory
+# add the root directory to the sys path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from API.GoogleServices.google_services_factory import GoogleServicesFactory
 from API.utilities import *
 
 
@@ -13,7 +18,6 @@ def get_xth_saturday_from_date(x: int, date: datetime = datetime.datetime.now(da
 def _get_all_calendars_data(uid: str) -> list[dict[str, str]]:
     google_services = GoogleServicesFactory().get_instance(uid)
     results = google_services.get_calendar_service().calendarList().list().execute()
-    GoogleServicesFactory.release_instance(uid)
 
     calendars_dicts = results.get("items", [])
     return calendars_dicts
@@ -41,7 +45,6 @@ def _get_all_events_from_specific_calendar_from_min_time_to_max_time(calendar_id
         )
         .execute()
     )
-    GoogleServicesFactory.release_instance(uid)
 
     events = events_result.get("items", [])
 

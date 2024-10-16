@@ -1,7 +1,8 @@
 import sys
 import os
+from datetime import datetime
 from urllib.parse import unquote
-
+from GoogleServices.calendar_handler import get_all_events_from_min_time_to_max_time
 from GoogleServices.google_services_factory import GoogleServicesFactory
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -61,8 +62,7 @@ def start_auth_flow(uid: str) -> str:
 def finish_auth_flow(uid: str, code: str) -> bool:
     google_services = GoogleServicesFactory().get_instance(uid)
     try:
-        google_services.finish_auth_flow(code)
-        return True
+        return google_services.finish_auth_flow(code)
     except Exception as e:
         GoogleServicesFactory.release_instance(uid)
         raise HTTPException(status_code=500, detail=str(e))
@@ -72,8 +72,20 @@ def finish_auth_flow(uid: str, code: str) -> bool:
 def setup_credentials(uid: str) -> bool:
     google_services = GoogleServicesFactory().get_instance(uid)
     try:
-        result = google_services.setup_credentials()
-        return result
+        return google_services.setup_credentials()
     except Exception as e:
         GoogleServicesFactory.release_instance(uid)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# NOT WORKING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+@app.get("/Jarvis/get_all_calendars_events_for_today")
+def get_all_calendars_events_for_today(uid: str):
+    try:
+        time_min = datetime.now().isoformat()
+        time_max = datetime.now().replace(hour=23).isoformat()
+        events = get_all_events_from_min_time_to_max_time(time_min, time_max, uid)
+        return events
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+# NOT WORKING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

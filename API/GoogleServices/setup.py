@@ -80,7 +80,7 @@ class GoogleServices:
         """Setup the credentials for the Google APIs."""
 
         user_token = self.db.get(f"Users/{self.uid}/google_token")
-        if user_token:
+        if user_token and user_token != "":
             try:
                 self.creds = Credentials.from_authorized_user_info(json.loads(user_token), self.SCOPES)
             except Exception as e:
