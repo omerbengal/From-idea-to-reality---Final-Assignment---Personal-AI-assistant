@@ -113,10 +113,8 @@ async def hourly_events_and_tasks(context: ContextTypes.DEFAULT_TYPE):
     now: datetime = datetime.now(ISRAEL_TZ)
     end_of_day: datetime = now.replace(hour=23, minute=59, second=59)
 
-    # API IS NOT WORKING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     response = requests.get(
         f"http://127.0.0.1:8000/Jarvis/get_all_calendars_events_for_today?uid={str(uid)}")
-    # API IS NOT WORKING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     await context.bot.send_message(uid, text=response.text)
 
@@ -138,9 +136,6 @@ async def start_hourly_events_and_tasks(update: Update, context: ContextTypes.DE
     if not context.user_data.get('authenticated'):
         await update.message.reply_text("Please authenticate first using the /authentication command.")
         return
-
-
-    uid = update.effective_chat.id
 
     add_job_to_queue(
         context=context,
