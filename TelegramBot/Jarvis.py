@@ -1,6 +1,5 @@
 # if using mac, need to perform: "brew install ffmpeg"
 import json
-
 import telegram
 from moviepy.editor import ImageSequenceClip
 import requests
@@ -15,6 +14,7 @@ from openai import OpenAI
 from PIL import Image, ImageDraw, ImageFont
 import random
 import numpy as np
+import urllib.parse
 
 import os
 
@@ -152,21 +152,25 @@ async def start_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response = requests.get(
             f"http://127.0.0.1:8000/Jarvis/start_auth_flow?uid={uid}")
         auth_url = response.text
-        context.user_data['awaiting_auth_code'] = True
+        context.user_data['awaiting_auth_url'] = True
         await update.message.reply_text(
-            f"Please click the following link to authenticate: {auth_url}\n\nOnce you have authenticated, please go to the url, copy the code, and send it here.")
+            f"Please click the following link to authenticate via google: {auth_url}\n\nOnce you have been redirected, please copy the full url, and send it here.")
     else:
-        context.user_data['awaiting_auth_code'] = False
+        context.user_data['awaiting_auth_url'] = False
         context.user_data['authenticated'] = False
         await update.message.reply_text("Sorry, I couldn't find your user ID.")
 
 
-async def finish_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE, auth_code: str,
+async def finish_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str,
                            loading_message: telegram.Message):
     uid = str(update.effective_user.id)
     if uid:
+        encoded_url = urllib.parse.quote(url, safe='')
+        print(f"Encoded URL: {encoded_url}")
         response = requests.get(
-            f"http://127.0.0.1:8000/Jarvis/finish_auth_flow?uid={uid}&code={auth_code}")
+            f"http://127.0.0.1:8000/Jarvis/finish_auth_flow",
+            params={"uid": uid, "encoded_url": encoded_url} # Using params for passing the long full encoded_url
+        )
 
         response_as_bool = eval(response.text.lower().capitalize())
 
@@ -252,7 +256,7 @@ async def update_authentication_user_data_based_on_setup_credentials(uid: str, c
 
     if credentials_already_setup:
         context.user_data['authenticated'] = True
-        context.user_data['awaiting_auth_code'] = False
+        context.user_data['awaiting_auth_url'] = False
     else:
         context.user_data['authenticated'] = False
 
@@ -267,13 +271,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
 
-
         if context.user_data.get('authenticated'):
             response = handle_response(update, context, text)
             await loading_message.edit_text(response)
 
-        elif context.user_data.get('awaiting_auth_code'):
-            context.user_data['awaiting_auth_code'] = False
+        elif context.user_data.get('awaiting_auth_url'):
+            context.user_data['awaiting_auth_url'] = False
             await finish_auth_flow(update, context, text, loading_message)
 
         elif context.user_data.get('awaiting_name'):
@@ -299,8 +302,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await loading_message.edit_text(f"An error occurred while processing your message: {str(e)}")
 
 
-    #     if context.user_data.get('awaiting_auth_code'):
-    #         context.user_data['awaiting_auth_code'] = False
+    #     if context.user_data.get('awaiting_auth_url'):
+    #         context.user_data['awaiting_auth_url'] = False
     #         await finish_auth_flow(update, context, text, loading_message)
     #
     #     elif context.user_data.get('awaiting_name'):

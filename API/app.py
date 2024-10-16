@@ -1,12 +1,14 @@
 import sys
 import os
+import urllib
 from datetime import datetime
 from urllib.parse import unquote
 from GoogleServices.calendar_handler import get_all_events_from_min_time_to_max_time
 from GoogleServices.google_services_factory import GoogleServicesFactory
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from request_manager import RequestManager
+import re
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -59,10 +61,19 @@ def start_auth_flow(uid: str) -> str:
 
 
 @app.get("/Jarvis/finish_auth_flow")
-def finish_auth_flow(uid: str, code: str) -> bool:
+def finish_auth_flow(uid: str, encoded_url: str = Query(..., max_length=None)) -> bool:
+    print(f"encoded_url: {encoded_url}")
     google_services = GoogleServicesFactory().get_instance(uid)
+    decoded_url = urllib.parse.unquote(encoded_url)
+    print(f"decoded_url: {decoded_url}")
     try:
-        return google_services.finish_auth_flow(code)
+        pattern = r"code=([^&]+)"
+        match = re.search(pattern, decoded_url)
+        if match:
+            code = match.group(1)
+            return google_services.finish_auth_flow(code)
+        else:
+            return False
     except Exception as e:
         GoogleServicesFactory.release_instance(uid)
         raise HTTPException(status_code=500, detail=str(e))
