@@ -103,32 +103,29 @@ def add_job_to_queue(context: ContextTypes.DEFAULT_TYPE, callback, when: float |
     )
 
 
-async def hourly_events_and_tasks(context: ContextTypes.DEFAULT_TYPE):
-
-    # Get events and tasks via API
-    # Here!
+async def hourly_events_reminder(context: ContextTypes.DEFAULT_TYPE):
 
     uid = context.job.chat_id
 
-    now: datetime = datetime.now(ISRAEL_TZ)
-    end_of_day: datetime = now.replace(hour=23, minute=59, second=59)
-
     response = requests.get(
-        f"http://127.0.0.1:8000/Jarvis/get_all_calendars_events_for_today?uid={str(uid)}")
+        f"http://127.0.0.1:8000/Jarvis/get_two_hour_range_events?uid={str(uid)}")
 
-    await context.bot.send_message(uid, text=response.text)
+    if response.text != "null":
+        response_text = response.text.strip('"')
+        formatted_response = response_text.replace("\\n", "\n")
+
+        await context.bot.send_message(uid, text=formatted_response)
 
     # Schedule the next message
     add_job_to_queue(
         context=context,
-        callback=hourly_events_and_tasks,
-        when=timedelta(seconds=20),
+        callback=hourly_events_reminder,
+        when=timedelta(hours=1),
         chat_id=uid
     )
 
 
-async def start_hourly_events_and_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # await context.bot.send_message(chat_id=update.effective_chat.id, text="starting hourly events and tasks...")
+async def start_hourly_events_reminder(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     uid = str(update.effective_chat.id)
     await update_authentication_user_data_based_on_setup_credentials(uid, context)
@@ -139,8 +136,8 @@ async def start_hourly_events_and_tasks(update: Update, context: ContextTypes.DE
 
     add_job_to_queue(
         context=context,
-        callback=hourly_events_and_tasks,
-        when=1,  # == now
+        callback=hourly_events_reminder,
+        when=0,  # == now
         chat_id=update.effective_chat.id
     )
 
@@ -183,7 +180,7 @@ async def finish_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE, u
             if authenticated:
                 await update.message.reply_text("Credentials setup successfully!")
                 context.user_data['authenticated'] = True
-                await start_hourly_events_and_tasks(update, context)
+                await start_hourly_events_reminder(update, context)
             else:
                 await update.message.reply_text("Failed to setup credentials. Please try to use the /authentication command again.")
                 context.user_data['authenticated'] = False
@@ -533,7 +530,7 @@ if __name__ == '__main__':
     app.add_handler(CommandHandler('start', start_command))
     app.add_handler(CommandHandler('testvideo', test_video_command))
     app.add_handler(CommandHandler('authentication', start_auth_flow))
-    app.add_handler(CommandHandler('reminder', start_hourly_events_and_tasks))
+    app.add_handler(CommandHandler('testreminder', start_hourly_events_reminder))
     # Add voice handler
     app.add_handler(MessageHandler(filters.VOICE, handle_voice))
     # Add text handler

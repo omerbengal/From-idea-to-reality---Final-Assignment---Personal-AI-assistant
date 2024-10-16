@@ -1,8 +1,10 @@
 import sys
 import os
 import urllib
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import unquote
+
+from open_ai_singleton import OpenAISingleton
 from GoogleServices.calendar_handler import get_all_events_from_min_time_to_max_time
 from GoogleServices.google_services_factory import GoogleServicesFactory
 from fastapi import FastAPI, HTTPException, Query
@@ -89,12 +91,42 @@ def setup_credentials(uid: str) -> bool:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/Jarvis/get_all_calendars_events_for_today")
-def get_all_calendars_events_for_today(uid: str):
+@app.get("/Jarvis/get_two_hour_range_events")
+def get_two_hour_range_events(uid: str):
     try:
+
         time_min = datetime.now()
-        time_max = datetime.now().replace(hour=23)
+        time_max = time_min + timedelta(hours=2)
         events = get_all_events_from_min_time_to_max_time(time_min, time_max, uid)
-        return events
+
+        role = """You are currently viewing your upcoming events.
+        These events will come in the form of !!!!!events!!!!!"""
+        task = """Extract the title and time of each event, and provide a clean and simple list of those.
+        The format of each event should be:
+        "<title>: <start time> - <end time>"
+        
+        If there are no events, return an empty string.
+        
+        All-day events should be the firsts in the list.
+        If an event is an all-day event, the format should be "<title>: All day."
+        Start time and end time should be in the format of HH:MM (24 hour format).
+        No need to provide the location or description of the events.
+        No need to put numbers or bullet points before each event.
+        There should be a break line between each event."""
+
+        messages = [
+            {"role": "system", "content": role},
+            {"role": "system", "content": f"!!!!!{events}!!!!!"},
+            {"role": "user", "content": f">>>>>>{task}<<<<<"}
+        ]
+
+        response = OpenAISingleton().get_response_str(messages, 0.25)
+
+        if response == "":
+            return None
+
+        response = "Here are your upcoming events in the next 2 hours:\n\n" + response
+        return response
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
