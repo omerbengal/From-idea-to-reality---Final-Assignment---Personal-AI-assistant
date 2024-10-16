@@ -395,9 +395,17 @@ async def send_video(update: Update, context: ContextTypes.DEFAULT_TYPE, video_p
 
 
 # Errors
-async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(f'An error occurred: {context.error}')
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    print(f"An error occurred: {context.error}")
 
+    # Check if 'update' is an instance of Update
+    if isinstance(update, Update) and update.effective_message:
+        await update.effective_message.reply_text("An error occurred while processing your request.")
+    elif context.bot_data:
+        # If we can't reply to the message, at least log to a default chat if set
+        default_chat_id = context.bot_data.get("default_error_chat")
+        if default_chat_id:
+            await context.bot.send_message(chat_id=default_chat_id, text=f"An error occurred: {context.error}")
 
 # Main
 if __name__ == '__main__':
@@ -418,6 +426,6 @@ if __name__ == '__main__':
     app.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND, handle_message))
     # Errors
-    app.add_error_handler(error)
+    app.add_error_handler(error_handler)
 
     app.run_polling(poll_interval=3)
