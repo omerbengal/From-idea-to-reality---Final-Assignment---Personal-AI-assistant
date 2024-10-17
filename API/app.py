@@ -1,3 +1,4 @@
+from Database.Database import Database
 import sys
 import os
 from urllib.parse import unquote
@@ -6,10 +7,10 @@ from GoogleServices.google_services_factory import GoogleServicesFactory
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from request_manager import RequestManager
+from pydantic import BaseModel  # To handle request body
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from API.Database.Database import Database
 
 # FastAPI setup
 app = FastAPI()
@@ -22,6 +23,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Request model for logging event
+
 
 # FastAPI routes
 @app.get("/Jarvis/get_response")
@@ -76,4 +80,18 @@ def setup_credentials(uid: str) -> bool:
         return result
     except Exception as e:
         GoogleServicesFactory.release_instance(uid)
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Add log_event route
+
+
+@app.post("/Jarvis/log_event")
+def log_event(event: dict):
+    print(event)
+    try:
+        # Call the log_event method in Database.py
+        Database().log_event(event["user_id"],
+                             event["event_name"], event["event_details"])
+        return {"message": "Event logged successfully"}
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

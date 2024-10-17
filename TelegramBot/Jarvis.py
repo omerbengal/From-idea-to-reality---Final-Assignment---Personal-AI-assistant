@@ -147,6 +147,20 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response = handle_response(update, context, transcribed_text)
         await update.message.reply_text(response)
 
+        # Log the voice message event
+        user_id = str(update.effective_user.id)
+        event_data = {
+            "user_id": user_id,
+            "event_name": "voice_message_transcribed",
+            "event_details": f"Voice message transcribed for user {user_id}: {transcribed_text}"
+        }
+        response = requests.post(
+            "http://127.0.0.1:8000/Jarvis/log_event", json=event_data)
+        if response.status_code == 200:
+            print("Event logged successfully")
+        else:
+            print(f"Failed to log event: {response.text}")
+
         # Clean up: delete the voice file
         os.remove(file_name)
 
@@ -226,6 +240,7 @@ async def generate_birthday_text(update: Update, context: ContextTypes.DEFAULT_T
     The message should be totally generic so it could fit anyone.
     The message should always start with Happy birthday {name}!
     The message should be no more than 5 lines (not including the starting line).
+    Make sure that each line is not longer than 75 characters.
     Do not add an ending to the message like: Best wishes... From...
     Seperate each line."""
 
@@ -381,6 +396,20 @@ async def send_video(update: Update, context: ContextTypes.DEFAULT_TYPE, video_p
                 write_timeout=300,
                 connect_timeout=60
             )
+
+            # Send API request to log the event
+            user_id = str(update.effective_user.id)
+            event_data = {
+                "user_id": user_id,
+                "event_name": "birthday_video_sent",
+                "event_details": f"Birthday card video sent to {user_id}"
+            }
+            response = requests.post(
+                "http://127.0.0.1:8000/Jarvis/log_event", json=event_data)
+            if response.status_code == 200:
+                print("Event logged successfully")
+            else:
+                print(f"Failed to log event: {response.text}")
 
             if os.path.exists(video_path):
                 os.remove(video_path)
