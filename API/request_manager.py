@@ -162,14 +162,14 @@ class RequestManager:
                 return "There seems to be no task in your request. So I can't help you with that."
 
         # If we reach here - there exists a task!
-        print("task is: "+ task)
+        # print("task is: "+ task)
 
         # print("classifying relevance")
         # # relevant = classify_relevance(task)
         # # if relevant == "not relevant":
         # #     return "I can not help you with that."
 
-        print("getting memory")
+        # print("getting memory")
         updated_memory = self.db.get_user_memory(self.uid)
 
         messages = [

@@ -1,4 +1,4 @@
-from datetime import timezone
+from datetime import datetime, timezone
 import pytz
 
 
@@ -13,7 +13,24 @@ def clean_bidirectional_text(input_string):
     return input_string
 
 
-def datetime_to_reformatted_str(i_datetime) -> str:
+def datetime_to_reformatted_str(i_datetime: datetime | str) -> str:
+    if isinstance(i_datetime, str):
+        i_datetime = datetime.fromisoformat(i_datetime)
+
+    print("before formatting")
     israel_tz = pytz.timezone('Asia/Jerusalem')
-    i_datetime_utc = israel_tz.localize(i_datetime).astimezone(timezone.utc)
-    return i_datetime_utc.isoformat().replace('+00:00', 'Z')
+
+    # Check if the datetime is naive (no timezone info)
+    if i_datetime.tzinfo is None:
+        # If naive, assume it's in Israel time and localize it
+        i_datetime = israel_tz.localize(i_datetime)
+    elif i_datetime.tzinfo != israel_tz:
+        # If it has a different timezone, convert it to Israel time
+        i_datetime = i_datetime.astimezone(israel_tz)
+
+    # Convert to UTC
+    i_datetime_utc = i_datetime.astimezone(timezone.utc)
+
+    reformatted = i_datetime_utc.isoformat().replace('+00:00', 'Z')
+    print("after formatting")
+    return reformatted

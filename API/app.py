@@ -64,10 +64,8 @@ def start_auth_flow(uid: str) -> str:
 
 @app.get("/Jarvis/finish_auth_flow")
 def finish_auth_flow(uid: str, encoded_url: str = Query(..., max_length=None)) -> bool:
-    print(f"encoded_url: {encoded_url}")
     google_services = GoogleServicesFactory().get_instance(uid)
     decoded_url = urllib.parse.unquote(encoded_url)
-    print(f"decoded_url: {decoded_url}")
     try:
         pattern = r"code=([^&]+)"
         match = re.search(pattern, decoded_url)
@@ -88,6 +86,15 @@ def setup_credentials(uid: str) -> bool:
         return google_services.setup_credentials()
     except Exception as e:
         GoogleServicesFactory.release_instance(uid)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/Jarvis/make_sure_user_exists")
+def make_sure_user_exists(uid: str) -> bool:
+    try:
+        Database().create_user(uid)
+        return True
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 

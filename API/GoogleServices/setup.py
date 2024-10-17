@@ -78,7 +78,6 @@ class GoogleServices:
 
     def setup_credentials(self) -> bool:
         """Setup the credentials for the Google APIs."""
-
         user_token = self.db.get(f"Users/{self.uid}/google_token")
         if user_token and user_token != "":
             try:
@@ -86,6 +85,11 @@ class GoogleServices:
             except Exception as e:
                 self.db.update(f"Users/{self.uid}", "google_token", "")
                 raise Exception(f"Error loading token: {e}")
+        else:
+            # No token in the DB
+            if self.creds:
+                # There exists an instance of GoogleServices of the user with creds
+                self.db.update(f"Users/{self.uid}", "google_token", self.creds.to_json())
 
         if self.creds and self.creds.expired and self.creds.refresh_token:
             try:

@@ -37,26 +37,28 @@ class OpenAISingleton:
             response_message = response.choices[0].message
             tool_calls = response_message.tool_calls
 
-            print(f"checking if need to use tools")
+            print(f"starting tool calls!:\n{tool_calls}\n")
             counter = 0
             while tool_calls and counter < 3:
                 counter += 1
-                print(f"I'm using tools now! ({counter})")
+                print(f"---> counter: ({counter})\n")
                 messages.append(response_message)
 
-                print(f"going through tool calls! ({counter}):\n{tool_calls}")
+                print(f"---> going through tool calls: {tool_calls}\n")
                 for tool_call in tool_calls:
+                    print("\n")
                     function_name = tool_call.function.name
-                    print(f"function name: {function_name} ({counter})")
+                    print(f"------> function name: {function_name}")
                     function_to_call = available_functions.get(function_name)
                     if function_to_call:
                         function_args = json.loads(
                             tool_call.function.arguments)
-                        print(f"({counter}) calling function {
+                        print(f"------> calling function {
                               function_name}, with args {function_args}")
                         try:
                             function_response = function_to_call(
                                 **function_args)
+                            print(f"------> function response: {function_response}")
                             messages.append(
                                 {
                                     "tool_call_id": tool_call.id,
@@ -66,6 +68,7 @@ class OpenAISingleton:
                                 }
                             )
                         except Exception as e:
+                            print(f"------> I got an error, whoops! {str(e)}")
                             messages.append(
                                 {
                                     "tool_call_id": tool_call.id,

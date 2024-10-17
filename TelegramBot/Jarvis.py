@@ -37,59 +37,54 @@ ISRAEL_TZ = pytz.timezone('Asia/Jerusalem')
 
 
 # Helper Functions
-def parse_reminder(text: str):
-    match = re.search(
-        r"remind me to (.+) at (\d{2}:\d{2})", text, re.IGNORECASE)
-    if match:
-        task = match.group(1)
-        time_str = match.group(2)
-        return task, time_str
-    return None, None
+# def parse_reminder(text: str):
+#     match = re.search(
+#         r"remind me to (.+) at (\d{2}:\d{2})", text, re.IGNORECASE)
+#     if match:
+#         task = match.group(1)
+#         time_str = match.group(2)
+#         return task, time_str
+#     return None, None
 
 
-def get_time_difference(time_str):
-    now = datetime.now(ISRAEL_TZ)
-    # format = '%d %b %Y %H:%M:%S'
-    reminder_time = ISRAEL_TZ.localize(datetime.strptime(
-        time_str, "%H:%M").replace(year=now.year, month=now.month, day=now.day))
-    if reminder_time < now:
-        reminder_time += timedelta(days=1)
-    return (reminder_time - now).total_seconds()
+# def get_time_difference(time_str):
+#     now = datetime.now(ISRAEL_TZ)
+#     # format = '%d %b %Y %H:%M:%S'
+#     reminder_time = ISRAEL_TZ.localize(datetime.strptime(
+#         time_str, "%H:%M").replace(year=now.year, month=now.month, day=now.day))
+#     if reminder_time < now:
+#         reminder_time += timedelta(days=1)
+#     return (reminder_time - now).total_seconds()
 
 
-async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
-    job = context.job
-    print(job)
-    await context.bot.send_message(job.chat_id, text=f"⏰ Reminder: {job.data['task']}")
+# async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
+#     job = context.job
+#     print(job)
+#     await context.bot.send_message(job.chat_id, text=f"⏰ Reminder: {job.data['task']}")
 
 
 # Ensure voice messages directory exists
 os.makedirs(VOICE_DOWNLOAD_PATH, exist_ok=True)
 
+# Helper Functions
+async def update_authentication_user_data_based_on_setup_credentials(uid: str, context: ContextTypes.DEFAULT_TYPE):
+    credentials_already_setup = await setup_credentials(uid)
 
-# Commands
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = str(update.effective_chat.id)
-    await update_authentication_user_data_based_on_setup_credentials(uid, context)
-
-    if not context.user_data.get('authenticated'):
-        await update.message.reply_text("Please authenticate first using the /authentication command.")
-        return
-
-    await update.message.reply_text(
-        'Hello, I am Jarvis, your personal assistant. I can help you with a variety of tasks and answer your questions. What can I do for you?')
+    if credentials_already_setup:
+        context.user_data['authenticated'] = True
+        context.user_data['awaiting_auth_url'] = False
+    else:
+        context.user_data['authenticated'] = False
+        context.user_data['awaiting_name'] = False
 
 
-async def test_video_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = str(update.effective_chat.id)
-    await update_authentication_user_data_based_on_setup_credentials(uid, context)
-
-    if not context.user_data.get('authenticated'):
-        await update.message.reply_text("Please authenticate first using the /authentication command.")
-        return
-
-    await update.message.reply_text("Please provide the name for the birthday card.")
-    context.user_data['awaiting_name'] = True
+def process_api_response(response: requests.Response) -> str:
+    if response.status_code == 200:
+        response_text = response.text.strip('"')
+        formatted_response = response_text.replace("\\n", "\n")
+        return formatted_response
+    else:
+        raise Exception(f"API request failed with status code {response.status_code}")
 
 
 def add_job_to_queue(context: ContextTypes.DEFAULT_TYPE, callback, when: float | timedelta | datetime | time,
@@ -103,6 +98,36 @@ def add_job_to_queue(context: ContextTypes.DEFAULT_TYPE, callback, when: float |
     )
 
 
+async def stuff_before_each_response(uid: str, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await make_sure_user_exists(uid)
+    await update_authentication_user_data_based_on_setup_credentials(uid, context)
+
+
+# Commands
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    uid = str(update.effective_chat.id)
+    await stuff_before_each_response(uid, context)
+
+    if not context.user_data.get('authenticated'):
+        await update.message.reply_text("Please authenticate first using the /authentication command.")
+        return
+
+    await update.message.reply_text(
+        'Hello, I am Jarvis, your personal assistant. I can help you with a variety of tasks and answer your questions. What can I do for you?')
+
+
+async def test_video_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    uid = str(update.effective_chat.id)
+    await stuff_before_each_response(uid, context)
+
+    if not context.user_data.get('authenticated'):
+        await update.message.reply_text("Please authenticate first using the /authentication command.")
+        return
+
+    await update.message.reply_text("Please provide the name for the birthday card.")
+    context.user_data['awaiting_name'] = True
+
+
 async def hourly_events_reminder(context: ContextTypes.DEFAULT_TYPE):
 
     uid = context.job.chat_id
@@ -111,10 +136,8 @@ async def hourly_events_reminder(context: ContextTypes.DEFAULT_TYPE):
         f"http://127.0.0.1:8000/Jarvis/get_two_hour_range_events?uid={str(uid)}")
 
     if response.text != "null":
-        response_text = response.text.strip('"')
-        formatted_response = response_text.replace("\\n", "\n")
-
-        await context.bot.send_message(uid, text=formatted_response)
+        processed_response = process_api_response(response)
+        await context.bot.send_message(uid, text=processed_response)
 
     # Schedule the next message
     add_job_to_queue(
@@ -126,9 +149,8 @@ async def hourly_events_reminder(context: ContextTypes.DEFAULT_TYPE):
 
 
 async def start_hourly_events_reminder(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-
     uid = str(update.effective_chat.id)
-    await update_authentication_user_data_based_on_setup_credentials(uid, context)
+    await stuff_before_each_response(uid, context)
 
     if not context.user_data.get('authenticated'):
         await update.message.reply_text("Please authenticate first using the /authentication command.")
@@ -148,7 +170,7 @@ async def start_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if uid:
         response = requests.get(
             f"http://127.0.0.1:8000/Jarvis/start_auth_flow?uid={uid}")
-        auth_url = response.text
+        auth_url = process_api_response(response)
         context.user_data['awaiting_auth_url'] = True
         await update.message.reply_text(
             f"Please click the following link to authenticate via google: {auth_url}\n\nOnce you have been redirected, please copy the full url, and send it here.")
@@ -163,13 +185,12 @@ async def finish_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE, u
     uid = str(update.effective_user.id)
     if uid:
         encoded_url = urllib.parse.quote(url, safe='')
-        print(f"Encoded URL: {encoded_url}")
         response = requests.get(
             f"http://127.0.0.1:8000/Jarvis/finish_auth_flow",
             params={"uid": uid, "encoded_url": encoded_url} # Using params for passing the long full encoded_url
         )
-
-        response_as_bool = eval(response.text.lower().capitalize())
+        processed_response = process_api_response(response)
+        response_as_bool = eval(processed_response.lower().capitalize())
 
         if response_as_bool:
             await loading_message.edit_text(
@@ -178,7 +199,7 @@ async def finish_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE, u
             authenticated = await setup_credentials(uid)
 
             if authenticated:
-                await update.message.reply_text("Credentials setup successfully!")
+                await update.message.reply_text("Credentials are valid!\nLet's start chatting!")
                 context.user_data['authenticated'] = True
                 await start_hourly_events_reminder(update, context)
             else:
@@ -196,11 +217,18 @@ async def finish_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE, u
 async def setup_credentials(uid: str) -> bool:
     response = requests.get(
         f"http://127.0.0.1:8000/Jarvis/setup_credentials?uid={uid}")
+    processed_response = process_api_response(response)
+    return eval(processed_response.lower().capitalize())
 
-    return eval(response.text.lower().capitalize())
+
+async def make_sure_user_exists(uid: str) -> bool:
+    response = requests.get(
+        f"http://127.0.0.1:8000/Jarvis/make_sure_user_exists?uid={uid}")
+    processed_response = process_api_response(response)
+    return eval(processed_response.lower().capitalize())
 
 
-# New function to handle voice messages
+# Handle voice messages
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Inform user that processing is starting
@@ -234,34 +262,21 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Sorry, there was an error processing your voice message: {str(e)}")
 
 
-# Responses
+# Assistant Response
 def handle_response(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str) -> str:
     uid = str(update.effective_user.id)
     if uid:
         response = requests.get(
             f"http://127.0.0.1:8000/Jarvis/get_response?request={text}&uid={uid}")
-        # return response.text.strip('"')  # Clean up the response text
-        response_text = response.text.strip('"')
-        formatted_response = response_text.replace("\\n", "\n")
-        return formatted_response
+        return process_api_response(response)
     else:
         return "Sorry, I couldn't find your user ID."
-
-
-async def update_authentication_user_data_based_on_setup_credentials(uid: str, context: ContextTypes.DEFAULT_TYPE):
-    credentials_already_setup = await setup_credentials(uid)
-
-    if credentials_already_setup:
-        context.user_data['authenticated'] = True
-        context.user_data['awaiting_auth_url'] = False
-    else:
-        context.user_data['authenticated'] = False
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     uid = str(update.effective_user.id)
-    await update_authentication_user_data_based_on_setup_credentials(uid, context)
+    await stuff_before_each_response(uid, context)
 
     # Send a "Loading response" message to the user and store the message object
     loading_message = await update.message.reply_text("Loading response...")
@@ -367,9 +382,8 @@ async def generate_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 with open(file_path, 'r') as file:
                     return file.read().strip()
-            except Exception as e:
-                print(f"Error reading the text file: {e}")
-                return "Happy Birthday!"
+            except Exception as err:
+                raise Exception(f"Error reading the text file: {err}")
 
         birthday_message = get_birthday_message(TEXT_FILE_PATH)
 
@@ -505,7 +519,6 @@ async def send_video(update: Update, context: ContextTypes.DEFAULT_TYPE, video_p
 
 # Errors
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-    print(f"An error occurred: {context.error}")
 
     # Check if 'update' is an instance of Update
     if isinstance(update, Update) and update.effective_message:
