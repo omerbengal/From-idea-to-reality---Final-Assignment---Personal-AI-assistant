@@ -3,7 +3,6 @@ import json
 import telegram
 from moviepy.editor import ImageSequenceClip
 import requests
-import re
 from datetime import datetime, timedelta, time
 from telegram import Update
 import pytz
