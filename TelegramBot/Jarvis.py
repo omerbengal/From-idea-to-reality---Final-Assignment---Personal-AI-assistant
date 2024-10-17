@@ -612,9 +612,9 @@ if __name__ == '__main__':
     )
 
     # Handlers
-    app.add_handler(CommandHandler('Start', start_command))
-    app.add_handler(CommandHandler('BirthdayCard', birthday_card_command))
-    app.add_handler(CommandHandler('Authenticate', start_auth_flow))
+    app.add_handler(CommandHandler('start', start_command))
+    app.add_handler(CommandHandler('birthday_card', birthday_card_command))
+    app.add_handler(CommandHandler('authenticate', start_auth_flow))
     # Add voice handler
     app.add_handler(MessageHandler(filters.VOICE, handle_voice))
     # Add text handler
