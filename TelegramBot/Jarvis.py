@@ -164,6 +164,48 @@ async def start_hourly_events_reminder(update: Update, context: ContextTypes.DEF
     )
 
 
+async def daily_uncompleted_tasks_reminder(context: ContextTypes.DEFAULT_TYPE):
+    uid = context.job.chat_id
+
+    response = requests.get(
+        f"http://127.0.0.1:8000/Jarvis/get_all_uncompleted_tasks?uid={str(uid)}")
+
+    if response.text != "null":
+        processed_response = process_api_response(response)
+        await context.bot.send_message(uid, text=processed_response)
+
+        # Calculate time until next 10:00 AM
+        now = datetime.now(ISRAEL_TZ)
+        target_time = now.replace(hour=12, minute=20, second=0, microsecond=0)
+
+        if now >= target_time:
+            target_time += timedelta(days=1)
+
+        # Schedule the next message
+        add_job_to_queue(
+            context=context,
+            callback=daily_uncompleted_tasks_reminder,
+            when=target_time,
+            chat_id=uid
+        )
+
+
+async def start_daily_uncompleted_tasks_reminder(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    uid = str(update.effective_chat.id)
+    await stuff_before_each_response(uid, context)
+
+    if not context.user_data.get('authenticated'):
+        await update.message.reply_text("Please authenticate first using the /authentication command.")
+        return
+
+    add_job_to_queue(
+        context=context,
+        callback=daily_uncompleted_tasks_reminder,
+        when=0,  # == now
+        chat_id=update.effective_chat.id
+    )
+
+
 async def start_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['authenticated'] = False
     uid = str(update.effective_user.id)
@@ -202,6 +244,7 @@ async def finish_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE, u
                 await update.message.reply_text("Credentials are valid!\nLet's start chatting!")
                 context.user_data['authenticated'] = True
                 await start_hourly_events_reminder(update, context)
+                await start_daily_uncompleted_tasks_reminder(update, context)
             else:
                 await update.message.reply_text("Failed to setup credentials. Please try to use the /authentication command again.")
                 context.user_data['authenticated'] = False
@@ -543,7 +586,7 @@ if __name__ == '__main__':
     app.add_handler(CommandHandler('start', start_command))
     app.add_handler(CommandHandler('testvideo', test_video_command))
     app.add_handler(CommandHandler('authentication', start_auth_flow))
-    app.add_handler(CommandHandler('testreminder', start_hourly_events_reminder))
+    app.add_handler(CommandHandler('testreminder', start_daily_uncompleted_tasks_reminder))
     # Add voice handler
     app.add_handler(MessageHandler(filters.VOICE, handle_voice))
     # Add text handler

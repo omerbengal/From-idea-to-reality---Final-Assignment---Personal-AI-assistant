@@ -17,7 +17,6 @@ def datetime_to_reformatted_str(i_datetime: datetime | str) -> str:
     if isinstance(i_datetime, str):
         i_datetime = datetime.fromisoformat(i_datetime)
 
-    print("before formatting")
     israel_tz = pytz.timezone('Asia/Jerusalem')
 
     # Check if the datetime is naive (no timezone info)
@@ -32,5 +31,4 @@ def datetime_to_reformatted_str(i_datetime: datetime | str) -> str:
     i_datetime_utc = i_datetime.astimezone(timezone.utc)
 
     reformatted = i_datetime_utc.isoformat().replace('+00:00', 'Z')
-    print("after formatting")
     return reformatted

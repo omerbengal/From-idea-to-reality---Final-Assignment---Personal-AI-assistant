@@ -4,6 +4,7 @@ import urllib
 from datetime import datetime, timedelta
 from urllib.parse import unquote
 
+from GoogleServices.tasks_handler import get_all_uncompleted_tasks
 from open_ai_singleton import OpenAISingleton
 from GoogleServices.calendar_handler import get_all_events_from_min_time_to_max_time
 from GoogleServices.google_services_factory import GoogleServicesFactory
@@ -101,12 +102,11 @@ def make_sure_user_exists(uid: str) -> bool:
 @app.get("/Jarvis/get_two_hour_range_events")
 def get_two_hour_range_events(uid: str):
     try:
-
         time_min = datetime.now()
         time_max = time_min + timedelta(hours=2)
         events = get_all_events_from_min_time_to_max_time(time_min, time_max, uid)
 
-        role = """You are currently viewing your upcoming events.
+        role = """You are currently viewing upcoming events.
         These events will come in the form of !!!!!events!!!!!"""
         task = """Extract the title and time of each event, and provide a clean and simple list of those.
         The format of each event should be:
@@ -133,6 +133,45 @@ def get_two_hour_range_events(uid: str):
             return None
 
         response = "Here are your upcoming events in the next 2 hours:\n\n" + response
+        return response
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@app.get("/Jarvis/get_all_uncompleted_tasks")
+def get_tasks(uid: str):
+    try:
+        tasks = get_all_uncompleted_tasks(uid)
+
+        role = """You are currently viewing uncompleted tasks.
+                These events will come in the form of !!!!!tasks!!!!!"""
+        task = """Extract the title and due date and time (if exists), and provide a clean and simple list of those.
+                The format of each event should be as follows:
+                For non due tasks: <title>
+                For due tasks: <title>: Due by <due date>
+
+                If there are no tasks, return an empty string.
+
+                Dates should be in the format of DD.MM.YYYY.
+                If there is a description, include it one line under the title, inside parentheses.
+                No need to put numbers or bullet points before each event.
+                There should be a break line between each task.
+                Do not use special characters, only plain text (except those in the title or description)."""
+
+        messages = [
+            {"role": "system", "content": role},
+            {"role": "system", "content": f"!!!!!{tasks}!!!!!"},
+            {"role": "user", "content": f">>>>>>{task}<<<<<"}
+        ]
+
+        response = OpenAISingleton().get_response_str(messages, 0.25)
+
+        if response == "":
+            return None
+
+        response = "Here are your uncompleted tasks:\n\n" + response
         return response
 
     except Exception as e:
