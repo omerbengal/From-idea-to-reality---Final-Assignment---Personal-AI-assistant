@@ -1,11 +1,16 @@
-from google_services_factory import GoogleServicesFactory
+import sys
+import os
+
+# add the root directory to the sys path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from API.GoogleServices.google_services_factory import GoogleServicesFactory
 from API.utilities import *
 
 
 def _get_all_tasks_lists(uid: str) -> list[dict[str, str]]:
     google_services = GoogleServicesFactory().get_instance(uid)
     results = google_services.get_tasks_service().tasklists().list().execute()
-    GoogleServicesFactory.release_instance(uid)
 
     return results.get("items", [])
 
@@ -13,7 +18,6 @@ def _get_all_tasks_lists(uid: str) -> list[dict[str, str]]:
 def _get_all_tasks_from_list(tasklistID: str, uid: str) -> list[dict[str, str]]:
     google_services = GoogleServicesFactory().get_instance(uid)
     results = google_services.get_tasks_service().tasks().list(tasklist=tasklistID).execute()
-    GoogleServicesFactory.release_instance(uid)
 
     tasks = results.get("items", [])
 
