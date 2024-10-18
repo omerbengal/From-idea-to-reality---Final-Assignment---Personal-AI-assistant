@@ -150,7 +150,6 @@ class RequestManager:
 
         information = st_br["information"]
         if information:
-            print("organizing personal information")
             PersonalInformationManager(self.uid).organize_personal_information(information)
 
         task = st_br["task"]
@@ -169,9 +168,7 @@ class RequestManager:
         # # if relevant == "not relevant":
         # #     return "I can not help you with that."
 
-        # print("getting memory")
         updated_memory = self.db.get_user_memory(self.uid)
-
         messages = [
             {"role": "system", "content": self.AI_PERSONAL_ASSISTANT_SYSTEM_ROLE},
             {"role": "system", "content": f"!!!!!{updated_memory}!!!!!"},
@@ -185,7 +182,7 @@ class RequestManager:
             "get_all_tasks": self.get_all_tasks_function,
             "get_all_uncompleted_tasks": self.get_all_uncompleted_tasks_function,
         }
-
+        
         response = OpenAISingleton().get_response_with_function_calling(
             messages=messages,
             functions=self.FUNCTIONS,
