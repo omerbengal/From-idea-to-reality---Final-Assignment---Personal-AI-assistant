@@ -339,15 +339,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
 
-        if context.user_data.get('authenticated'):
-            response = handle_response(update, context, text)
-            await loading_message.edit_text(response)
-
-        elif context.user_data.get('awaiting_auth_url'):
-            context.user_data['awaiting_auth_url'] = False
-            await finish_auth_flow(update, context, text, loading_message)
-
-        elif context.user_data.get('awaiting_name'):
+        if context.user_data.get('awaiting_name'):
             context.user_data['awaiting_name'] = False
 
             # Edit loading message before generating birthday text
@@ -362,41 +354,21 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await send_video(update, context, VIDEO_PATH)
             await loading_message.edit_text("Video sent!")
 
+        elif context.user_data.get('authenticated'):
+            response = handle_response(update, context, text)
+            await loading_message.edit_text(response)
+
+        elif context.user_data.get('awaiting_auth_url'):
+            context.user_data['awaiting_auth_url'] = False
+            await finish_auth_flow(update, context, text, loading_message)
+
+
         else:
             await loading_message.edit_text(
                 "Sorry, you need to authenticate first. Please use the /authentication command.")
 
     except Exception as e:
         await loading_message.edit_text(f"An error occurred while processing your message: {str(e)}")
-
-
-    #     if context.user_data.get('awaiting_auth_url'):
-    #         context.user_data['awaiting_auth_url'] = False
-    #         await finish_auth_flow(update, context, text, loading_message)
-    #
-    #     elif context.user_data.get('awaiting_name'):
-    #         context.user_data['awaiting_name'] = False
-    #
-    #         # Edit loading message before generating birthday text
-    #         await loading_message.edit_text("Generating birthday message...")
-    #         await generate_birthday_text(update, context, text)
-    #
-    #         # Edit loading message before generating video
-    #         await loading_message.edit_text("Creating birthday video...")
-    #         await generate_video(update, context)
-    #
-    #         # Send the video and edit the loading message again
-    #         await send_video(update, context, VIDEO_PATH)
-    #         await loading_message.edit_text("Video sent!")
-    #
-    #     else:
-    #         if context.user_data.get('authenticated'):
-    #             response = handle_response(update, context, text)
-    #             await loading_message.edit_text(response)
-    #         else:
-    #             await loading_message.edit_text(
-    #                 "Sorry, you need to authenticate first. Please use the /authentication command.")
-    #
 
 
 async def generate_birthday_text(update: Update, context: ContextTypes.DEFAULT_TYPE, name: str):

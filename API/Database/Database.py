@@ -53,13 +53,8 @@ class Database:
             self.update("Users", uid, {
                 "Memory": {
                     "Personal details": "",
-                    "Life Goals": "",
                     "Interests And Hobbies": "",
-                    "Life Habits": "",
                     "Relationships": "",
-                    "Values": "",
-                    "Emotions": "",
-                    "Ideas And Thoughts": ""
                 },
                 "History": "",
                 "google_token": ""
@@ -111,6 +106,35 @@ class Database:
                     user_id, timestamp, event_data)
 
         print(f"Event logged: {event_name} for user {user_id} at {timestamp}")
+
+    def get_recent_conversation(self, uid: str, limit: int = 10) -> list:
+        """
+        Fetches the last `limit` user messages and corresponding bot responses for the given user.
+        :param uid: The user ID for whom the conversation is fetched.
+        :param limit: The number of message pairs (user + assistant responses) to retrieve.
+        :return: A list of dictionaries containing 'Who sent' and 'Content' of each message.
+        """
+        # Get the user's history from Firebase
+        print("got here 2")
+        history = self.get(f"Users/{uid}/History")
+        # Create a list to store the conversation
+        conversation = []
+        # Get the sorted keys (timestamps) in descending order to get the latest messages first
+        sorted_history = sorted(history.items(), key=lambda item: item[0], reverse=True)
+        # Iterate over the sorted messages and add them to the conversation list
+        for timestamp, message_info in sorted_history:
+            if 'Content' in message_info:  # Make sure the entry has content
+                who_sent = message_info['Who sent']
+                content = message_info['Content']
+                conversation.append(f"{who_sent}: {content}")
+            
+            # Stop once we've collected the required number of messages
+            if len(conversation) >= limit:
+                break
+        
+        # Return the most recent messages (limited by the 'limit' parameter)
+        return conversation
+
 
 
 if __name__ == "__main__":

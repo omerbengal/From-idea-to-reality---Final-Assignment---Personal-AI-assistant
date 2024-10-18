@@ -23,7 +23,7 @@ class RequestManager:
 
         ### System Role ###
         You are a helpful AI personal assistant, a new version of AI model able to manage and optimize the user’s busy life.
-        To do that, you will understand the user's tasks and calendar events, life habits, goals, future plans, interests, hobbies, personality, values, emotions, feelings, thoughts, ideas, and past experiences.
+        To do that, you will understand the user's tasks and calendar events, future plans, interests, thoughts, ideas, and past experiences.
         If a human 'personal assistant' has level 10 of knowledge, you will have level 280 of knowledge in this role.
         Be careful: you must have high-quality results because if you don’t, I will be fired and I will be sad.
         So give your best and be proud of your ability.
@@ -42,8 +42,9 @@ class RequestManager:
         ### Task ###
         You will get a task that the user wishes you to do or to answer.
         A task will come in the form of >>>>>task<<<<<
-        If the task is empty, you should reply: "I can't help you with that."
         """
+        # If the task is empty, you should reply: "I can't help you with that."
+        # """
 
         self.FUNCTIONS = [
             {
@@ -143,10 +144,30 @@ class RequestManager:
         tasks = get_all_uncompleted_tasks(self.uid)
         return json.dumps(tasks, indent=4, ensure_ascii=False)
 
+    def get_recent_conversation_history(self, limit=10):
+        """
+        Retrieves the recent conversation history between the user and the bot and returns it as a formatted string.
+        :param limit: The number of recent messages and responses to retrieve (default is 10 user messages + 10 bot replies).
+        :return: A formatted string representing the recent conversation history.
+        """
+        # Fetch the recent conversation history (last 10 user-bot exchanges).
+        conversation_history = self.db.get_recent_conversation(self.uid, limit)
+
+        # Initialize a list to hold the formatted conversation as a string.
+        # formatted_history = []
+
+        # # Iterate over each entry in the conversation and format it.
+        # for entry in conversation_history:
+        #     # Add the 'Who sent' label followed by the 'Content'.
+        #     formatted_history.append(f"{entry['Who sent']}: {entry['Content']}")
+
+        # Join all messages into a single string with each entry on a new line.
+        # return "\n".join(formatted_history)
+        return conversation_history
+
     def get_response(self, prompt: str) -> str:
         print("structure breaking")
         st_br = StructureBreakManager().break_structure(prompt)
-
 
         information = st_br["information"]
         if information:
@@ -154,11 +175,11 @@ class RequestManager:
 
         task = st_br["task"]
 
-        if task == "":
-            if  information:
-                return "There seems to be no task in your request, but I have organized your personal information."
-            else:
-                return "There seems to be no task in your request. So I can't help you with that."
+        # if task == "":
+        #     if  information:
+        #         return "There seems to be no task in your request, but I have organized your personal information."
+        #     else:
+        #         return "There seems to be no task in your request. So I can't help you with that."
 
         # If we reach here - there exists a task!
         # print("task is: "+ task)
@@ -168,10 +189,13 @@ class RequestManager:
         # # if relevant == "not relevant":
         # #     return "I can not help you with that."
 
+        # Fetch the recent conversation history (20 messages in total: 10 user + 10 bot)
+        recent_history = self.get_recent_conversation_history(limit=10)
         updated_memory = self.db.get_user_memory(self.uid)
         messages = [
             {"role": "system", "content": self.AI_PERSONAL_ASSISTANT_SYSTEM_ROLE},
             {"role": "system", "content": f"!!!!!{updated_memory}!!!!!"},
+            {"role": "system", "content": f"Recent conversation history:\n{recent_history}"},
             {"role": "user", "content": f">>>>>>{task}<<<<<"}
         ]
 

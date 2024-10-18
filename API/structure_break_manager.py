@@ -4,13 +4,8 @@ from open_ai_singleton import OpenAISingleton
 class StructureBreakManager:
     def __init__(self):
         self.memory_categories_explanations = """Personal details - Information about the user's life, such as their name, age, gender, and occupation. The information in this category should only be about the user himself, not about his friends or any other person.
-                                                                            Life Goals - Objectives that the user wants to achieve in their life.
-                                                                            Interests And Hobbies - Activities and life interests that the user enjoys.
-                                                                            Life Habits - Habits and routines that the user follows.
-                                                                            Relationships - Information about the user's relationships. Each relationship should contain data on a single person (such as their name, age, gender, and occupation) and the person's relationship to the user (such as "friend", "family member", "romantic partner", or "acquaintance").
-                                                                            Values - Beliefs and principles that the user holds dear.
-                                                                            Emotions - Emotions that the user experiences (such as happiness, sadness, anger, or fear) with context to their life events.
-                                                                            Ideas And Thoughts - Ideas and thoughts that the user has about a particular topic or situation."""
+                                                                                            Interests And Hobbies - Activities and life interests that the user enjoys.
+                                                                                            Relationships - Information about the user's relationships. Each relationship should contain data on a single person (such as their name, age, gender, and occupation) and the person's relationship to the user (such as "friend", "family member", "romantic partner", or "acquaintance")."""
         self.STRUCTURE_BREAKER_SYSTEM_ROLE = """
         ### Important information ###
         - Date format is "DD/MM/YYYY".
@@ -40,8 +35,9 @@ class StructureBreakManager:
         ### General instructions ###
         - Make sure to only use double quotes.
         - You must never alter the task or the information in the prompt.
-        - If there is no task - return an empty string.
         """
+        # - If there is no task - return an empty string.
+        # """
 
 
     def break_structure(self, prompt: str) -> dict:

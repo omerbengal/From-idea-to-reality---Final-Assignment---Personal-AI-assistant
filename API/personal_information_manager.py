@@ -10,13 +10,8 @@ class PersonalInformationManager:
         self.db = Database()
         self.TODAY = get_now().isoformat()
         self.memory_categories_explanations = """Personal details - Information about the user's life, such as their name, age, gender, and occupation. The information in this category should only be about the user himself, not about his friends or any other person.
-                                                                                            Life Goals - Objectives that the user wants to achieve in their life.
                                                                                             Interests And Hobbies - Activities and life interests that the user enjoys.
-                                                                                            Life Habits - Habits and routines that the user follows.
-                                                                                            Relationships - Information about the user's relationships. Each relationship should contain data on a single person (such as their name, age, gender, and occupation) and the person's relationship to the user (such as "friend", "family member", "romantic partner", or "acquaintance").
-                                                                                            Values - Beliefs and principles that the user holds dear.
-                                                                                            Emotions - Emotions that the user experiences (such as happiness, sadness, anger, or fear) with context to their life events.
-                                                                                            Ideas And Thoughts - Ideas and thoughts that the user has about a particular topic or situation."""
+                                                                                            Relationships - Information about the user's relationships. Each relationship should contain data on a single person (such as their name, age, gender, and occupation) and the person's relationship to the user (such as "friend", "family member", "romantic partner", or "acquaintance")."""
         self.PERSONAL_INFORMATION_MANAGER_SYSTEM_ROLE = f"""
                 ### Important information ###
                 - Date format is "DD/MM/YYYY".
@@ -38,7 +33,7 @@ class PersonalInformationManager:
                 ### General instructions ###
                 - Make sure to only use double quotes.
                 - You must never alter the content provided to you, but you can rephrase it a bit to make it more readable.
-                - The insformation list should contain only personal information of the user, and not temporary information related to the specific task the user requested.
+                - The information list should contain only personal information of the user, and not temporary information related to the specific task the user requested.
                 - If a piece of information (or a part of it) already exists in the memory, do not add it again, but instead update the existing information.
                 """
 
