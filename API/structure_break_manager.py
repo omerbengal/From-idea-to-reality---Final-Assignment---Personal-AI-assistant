@@ -30,14 +30,16 @@ class StructureBreakManager:
         You will act as a middleman between a user and an AI personal assistant.
         You will get a prompt from the user and analyze it, it will come in the form of >>>>>prompt<<<<<.
         The prompt can potentially contain one or more of the following ideas:
-        - Some personal information about the user's life.
+        - Personal information about the user.
         - A task for the AI personal assistant to do.
+        - Other types of inputs.
         
         ### Output ###
         You will analyze the prompt and provide a dictionary with the following structure:
         {
             "information": <List of information items - each one is a string>,
             "task": <The task to do - a string>
+            "other": <Any other part of the prompt - a string>
         }
         
         ### Personal information instructions ###
@@ -47,6 +49,7 @@ class StructureBreakManager:
         ### General instructions ###
         - Make sure to only use double quotes.
         - You must never alter the task or the information in the prompt.
+        - If a piece of the prompt suits more than one output category, put it in all of them.
         """
 
 

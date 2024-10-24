@@ -53,9 +53,19 @@ class RequestManager:
         You will get a task that the user wishes you to do or to answer.
         A task will come in the form of >>>>>task<<<<<
         
+        ### Other ###
+        You will get other types of inputs that you should handle.
+        Other types of inputs will come in the form of $$$$$other$$$$$
+        Answer these inputs as best as you can. Do not lie to the user, and do not provide false information.
+        
         ### Recent Conversation History ###
-        You will get a recent conversation history between the user and the bot.
-        The recent conversation history will come in the form of a list of messages.
+        You will get the last 10 messages in the conversation between the user and the bot.
+        These messages will be in a dictionary, where the key is the timestamp of the message, and the value is another dictionary containing the content of the message and who sent it.
+        The items in the dictionary are sorted by timestamp in descending order. This means that the most recent message will be the first item in the dictionary.
+        These messages will come in the form of &&&&&recent_history&&&&&
+        Use this information to provide more personalized responses to the user.
+        
+        Do not answer anything which the user did not ask for. 
         """
 
         self.FUNCTIONS = [
@@ -175,25 +185,33 @@ class RequestManager:
 
     def get_response(self, prompt: str) -> str:
         st_br = StructureBreakManager().break_structure(prompt)
+
         information = st_br["information"]
         if information:
             PersonalInformationManager(self.uid).organize_personal_information(information)
 
         task = st_br["task"]
 
+        other = st_br["other"]
+
         # Fetch the recent conversation history (20 messages in total: 10 user + 10 bot)
         recent_history = self.get_recent_conversation_history(limit=10)
+
         updated_memory = self.db.get_user_memory(self.uid)
         messages = [
             {"role": "system", "content": self.AI_PERSONAL_ASSISTANT_SYSTEM_ROLE},
             {"role": "system", "content": f"!!!!!{updated_memory}!!!!!"},
-            {"role": "system", "content": f"Recent conversation history:\n{recent_history}"},
-            {"role": "user", "content": f">>>>>>{task}<<<<<"}
+            {"role": "system", "content": f"&&&&&{recent_history}&&&&&"},
         ]
+
+        if task:
+            messages.append({"role": "user", "content": f">>>>>{task}<<<<<"})
+
+        if other:
+            messages.append({"role": "user", "content": f"$$$$${other}$$$$$"})
 
         available_functions = {
             "get_Xth_saturday_from_date": self.get_xth_saturday_from_date_function,
-            # "get_all_events_from_today_up_to_certain_date": get_all_events_from_today_up_to_certain_date_function,
             "get_all_events_from_min_time_to_max_time": self.get_all_events_from_min_time_to_max_time_function,
             "get_all_tasks": self.get_all_tasks_function,
             "get_all_uncompleted_tasks": self.get_all_uncompleted_tasks_function,

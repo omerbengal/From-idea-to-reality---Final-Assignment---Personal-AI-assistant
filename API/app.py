@@ -180,7 +180,6 @@ def get_tasks(uid: str):
 
 @app.post("/Jarvis/log_event")
 def log_event(event: dict):
-    print(event)
     try:
         # Call the log_event method in Database.py
         Database().log_event(event["user_id"],
@@ -193,7 +192,6 @@ def log_event(event: dict):
 @app.get("/Jarvis/generate_birthday_video")
 def generate_birthday_video(name: str) -> bool:
     try:
-        print("1")
         BirthdayCardGenerator().generate_video(name)
         return True
     except Exception as e:

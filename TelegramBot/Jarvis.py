@@ -53,6 +53,10 @@ def process_api_response(response: requests.Response) -> str:
     if response.status_code == 200:
         response_text = response.text.strip('"')
         formatted_response = response_text.replace("\\n", "\n")
+        first_char = "\\"
+        second_char = "\""
+        first_and_second_char = first_char + second_char
+        formatted_response = formatted_response.replace(first_and_second_char, "\"")
         return formatted_response
     else:
         raise Exception(f"API request failed with status code {response.status_code}")
@@ -80,7 +84,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await stuff_before_each_response(uid, context)
 
     if not context.user_data.get('authenticated'):
-        await update.message.reply_text("Please authenticate first using the /authentication command.")
+        await update.message.reply_text("Please authenticate first using the /authenticate command.")
         return
 
     await update.message.reply_text(
@@ -92,7 +96,7 @@ async def birthday_card_command(update: Update, context: ContextTypes.DEFAULT_TY
     await stuff_before_each_response(uid, context)
 
     if not context.user_data.get('authenticated'):
-        await update.message.reply_text("Please authenticate first using the /authentication command.")
+        await update.message.reply_text("Please authenticate first using the /authenticate command.")
         return
 
     await update.message.reply_text("Please provide the name for the birthday card.")
@@ -124,7 +128,7 @@ async def start_hourly_events_reminder(update: Update, context: ContextTypes.DEF
     await stuff_before_each_response(uid, context)
 
     if not context.user_data.get('authenticated'):
-        await update.message.reply_text("Please authenticate first using the /authentication command.")
+        await update.message.reply_text("Please authenticate first using the /authenticate command.")
         return
 
     add_job_to_queue(
@@ -166,7 +170,7 @@ async def start_daily_uncompleted_tasks_reminder(update: Update, context: Contex
     await stuff_before_each_response(uid, context)
 
     if not context.user_data.get('authenticated'):
-        await update.message.reply_text("Please authenticate first using the /authentication command.")
+        await update.message.reply_text("Please authenticate first using the /authenticate command.")
         return
 
     add_job_to_queue(
@@ -217,11 +221,11 @@ async def finish_auth_flow(update: Update, context: ContextTypes.DEFAULT_TYPE, u
                 await start_hourly_events_reminder(update, context)
                 await start_daily_uncompleted_tasks_reminder(update, context)
             else:
-                await update.message.reply_text("Failed to setup credentials. Please try to use the /authentication command again.")
+                await update.message.reply_text("Failed to setup credentials. Please try to use the /authenticate command again.")
                 context.user_data['authenticated'] = False
         else:
             context.user_data['authenticated'] = False
-            await loading_message.edit_text("Authentication failed. Please try to use the /authentication command again.")
+            await loading_message.edit_text("Authentication failed. Please try to use the /authenticate command again.")
 
     else:
         context.user_data['authenticated'] = False
@@ -246,7 +250,7 @@ async def make_sure_user_exists(uid: str) -> bool:
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Inform user that processing is starting
-        await update.message.reply_text("I received your voice message. Processing...")
+        message_to_edit = await update.message.reply_text("I received your voice message. Processing...")
 
         # Get voice message file
         voice_file = await context.bot.get_file(update.message.voice.file_id)
@@ -261,13 +265,14 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         with open(file_name, "rb") as audio_file:
             transcript = client.audio.transcriptions.create(
                 model="whisper-1",
-                file=audio_file
+                file=audio_file,
+                language="en"
             )
 
         # Process transcribed text
         transcribed_text = transcript.text
         response = handle_response(update, context, transcribed_text)
-        await update.message.reply_text(response)
+        await message_to_edit.edit_text(response)
 
         # Log the voice message event
         user_id = str(update.effective_user.id)
@@ -332,7 +337,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         else:
             await loading_message.edit_text(
-                "Sorry, you need to authenticate first. Please use the /authentication command.")
+                "Sorry, you need to authenticate first. Please use the /authenticate command.")
 
     except Exception as e:
         await loading_message.edit_text(f"An error occurred while processing your message: {str(e)}")

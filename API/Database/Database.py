@@ -6,7 +6,6 @@ from firebase_admin import db, credentials
 
 
 class Database:
-
     # https://console.firebase.google.com/u/0/project/jarvis-15883/database/jarvis-15883-default-rtdb/data
 
     _instance = None
@@ -33,15 +32,12 @@ class Database:
     def get(self, path_after_root: str):
         return self.root_ref.child(path_after_root).get()
 
-
     def update(self, path_after_root: str, key: str, value):
         path = "/" + path_after_root
         self.db.reference(path).update({key: value})
 
-
     def check_user_exists(self, uid: str):
         return self.get("Users/" + uid) is not None
-
 
     def create_user(self, uid: str):
         if not self.check_user_exists(uid):
@@ -58,10 +54,8 @@ class Database:
             # Log the user creation event
             self.log_event(uid, "user_created", f"User {uid} created")
 
-
     def get_user_memory(self, uid: str):
         return self.get("Users/" + uid + "/Memory")
-
 
     def update_user_memory(self, uid: str, category: str, memory_instance: str):
         # Now in format of "YYYYMMDDHHMMSS"
@@ -70,17 +64,14 @@ class Database:
                     category, timestamp, memory_instance)
         self.log_event(uid, "memory_updated", f"Memory updated in {category}")
 
-
     def get_user_history(self, uid: str):
         return self.get("Users/" + uid + "/History")
-
 
     def update_user_history(self, uid: str, who_sent: Literal["Assistant", "User"], history_instance: str):
         # Now in format of "YYYYMMDDHHMMSS"
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         self.update("Users/" + uid + "/History", timestamp,
                     {"Who sent": who_sent, "Content": history_instance})
-
 
     def log_event(self, user_id: str, event_name: str, event_details: str):
         """
@@ -105,8 +96,7 @@ class Database:
         self.update("analytics/" + event_name + "/" +
                     user_id, timestamp, event_data)
 
-
-    def get_recent_conversation(self, uid: str, limit: int = 10) -> list:
+    def get_recent_conversation(self, uid: str, limit: int = 10):
         """
         Fetches the last `limit` user messages and corresponding bot responses for the given user.
         :param uid: The user ID for whom the conversation is fetched.
@@ -115,24 +105,56 @@ class Database:
         """
         # Get the user's history from Firebase
         history = self.get(f"Users/{uid}/History") or {}
-        # Create a list to store the conversation
-        conversation = []
-        # Get the sorted keys (timestamps) in descending order to get the latest messages first
-        sorted_history = sorted(history.items(), key=lambda item: item[0], reverse=True)
-        # Iterate over the sorted messages and add them to the conversation list
-        for timestamp, message_info in sorted_history:
-            if 'Content' in message_info:  # Make sure the entry has content
-                who_sent = message_info['Who sent']
-                content = message_info['Content']
-                conversation.append(f"{who_sent}: {content}")
-            
-            # Stop once we've collected the required number of messages
-            if len(conversation) >= limit:
-                break
-        
-        # Return the most recent messages (limited by the 'limit' parameter)
-        return conversation
+
+        limit_for_dict = -1 * limit
+
+        history_dict = {}
+
+        # get last 10 history items
+        last_ten_history = history.items()
+        for item in last_ten_history:
+            history_dict[item[0]] = item[1]
+
+        # reverse the dict
+        history_dict = dict(reversed(list(history_dict.items())))
+
+        return history_dict
 
 
 if __name__ == "__main__":
-    pass
+    omer = [('20241024202946', {'Content': "I don't have your name in my memory. Could you please tell me your name?",
+                                'Who sent': 'Assistant'}),
+
+            ('20241024202958', {
+        'Content': "It seems like you're asking about the messages you've sent, but I don't have a record of your name. Could you please tell me your name? This will help me assist you better!",
+        'Who sent': 'Assistant'}),
+
+            ('20241024203258', {
+        'Content': "I don't have your name stored in my memory. Could you please tell me your name? This will help me assist you better!",
+        'Who sent': 'Assistant'}),
+
+            ('20241024203313', {
+        'Content': 'Hello Omer! How can I assist you today? If you have any tasks, events, or questions in mind, feel free to share!',
+        'Who sent': 'Assistant'}),
+
+            ('20241024203411', {'Content': 'Your name is Omer. How can I assist you today?', 'Who sent': 'Assistant'}),
+
+            ('20241024203445',
+             {'Content': 'The message you sent 6 messages ago was: "What is the message I sent you 3 messages ago?"',
+              'Who sent': 'Assistant'}),
+
+            ('20241024203719', {
+            'Content': 'The message you sent 7 messages ago was: "What is the message I sent you 3 messages ago?"',
+            'Who sent': 'Assistant'}),
+
+            ('20241024204009', {
+            'Content': "I'm unable to retrieve messages from that far back in our conversation history. However, I can assist you with any current tasks or questions you have. How can I help you today?",
+            'Who sent': 'Assistant'}),
+
+            ('20241024204141', {
+            'Content': "Hello Omer! I'm here and ready to assist you. How are you doing today? If there's anything specific you'd like help with, just let me know!",
+            'Who sent': 'Assistant'}),
+
+            ('20241024204424', {
+            'Content': "Hello Omer! How's it going? If there's anything you need help with today, just let me know!",
+            'Who sent': 'Assistant'})]
