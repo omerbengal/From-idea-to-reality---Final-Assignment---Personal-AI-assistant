@@ -13,6 +13,7 @@ class OpenAISingleton:
 
     _api_key = config["OPEN_AI_API_KEY"]
 
+
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             with cls._lock:
@@ -21,8 +22,10 @@ class OpenAISingleton:
                     cls._instance._initialize(*args, **kwargs)
         return cls._instance
 
+
     def _initialize(self, *args, **kwargs):
         self.client = OpenAI(api_key=self._api_key, *args, **kwargs)
+
 
     def get_response_with_function_calling(self, messages: list[dict[str, str]], functions, available_functions: dict[str, callable], temperature: float, seed: int = 42) -> str:
         try:
@@ -83,6 +86,7 @@ class OpenAISingleton:
         except Exception as e:
             raise Exception(str(e))
 
+
     def get_response_dict(self, messages: list[dict[str, str]], temperature: float, seed: int = 42) -> dict:
         try:
             response = self.client.chat.completions.create(
@@ -96,6 +100,7 @@ class OpenAISingleton:
             return json.loads(response_message.content) if response_message.content else {}
         except Exception as e:
             raise Exception(str(e))
+
 
     def get_response_str(self, messages: list[dict[str, str]], temperature: float, seed: int = 42) -> str:
         try:

@@ -4,10 +4,9 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 from collections import defaultdict
 from datetime import datetime, timedelta
-from API.Database.Database import Database  # Import Database to fetch data
+from API.Database.Database import Database
 
 
 # Fetch analytics data from Firebase
@@ -83,6 +82,7 @@ def plot_events_count(events_count: dict):
 
     print(f"Graph saved at: {output_path}")
 
+
 # Plot the user event counts
 def plot_user_events_count(user_engagement: dict):
     """
@@ -118,6 +118,8 @@ def plot_user_events_count(user_engagement: dict):
 
     print(f"Graph saved at: {output_path}")
 
+
+# Plot the user growth over time
 def plot_user_growth(user_data: dict):
     """
     Plots a line chart showing the number of users created over time.
@@ -170,7 +172,6 @@ def plot_user_growth(user_data: dict):
     print(f"Graph saved at: {output_path}")
 
 
-
 # Main function to fetch, aggregate, and visualize the analytics data
 def main():
     """
@@ -186,10 +187,10 @@ def main():
     aggregated_data = aggregate_analytics_data(analytics_data)
 
     # Step 3: Plot event counts
-    #plot_events_count(aggregated_data["event_count"])
+    plot_events_count(aggregated_data["event_count"])
 
     # Step 4: Plot user events count
-    #plot_user_events_count(aggregated_data["user_engagement"])
+    plot_user_events_count(aggregated_data["user_engagement"])
 
     # Step 5: Plot user growth over time
     plot_user_growth(analytics_data)
@@ -197,7 +198,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    #enter 5 new users to the database
-    # db = Database()
-    # for i in range(5):
-    #     db.create_user("User" + str(i+1))

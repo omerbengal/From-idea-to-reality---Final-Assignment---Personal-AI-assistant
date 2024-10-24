@@ -34,36 +34,9 @@ TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
 VOICE_DOWNLOAD_PATH = "./voice_messages/"
 ISRAEL_TZ = pytz.timezone('Asia/Jerusalem')
 
-
-# Helper Functions
-# def parse_reminder(text: str):
-#     match = re.search(
-#         r"remind me to (.+) at (\d{2}:\d{2})", text, re.IGNORECASE)
-#     if match:
-#         task = match.group(1)
-#         time_str = match.group(2)
-#         return task, time_str
-#     return None, None
-
-
-# def get_time_difference(time_str):
-#     now = datetime.now(ISRAEL_TZ)
-#     # format = '%d %b %Y %H:%M:%S'
-#     reminder_time = ISRAEL_TZ.localize(datetime.strptime(
-#         time_str, "%H:%M").replace(year=now.year, month=now.month, day=now.day))
-#     if reminder_time < now:
-#         reminder_time += timedelta(days=1)
-#     return (reminder_time - now).total_seconds()
-
-
-# async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
-#     job = context.job
-#     print(job)
-#     await context.bot.send_message(job.chat_id, text=f"⏰ Reminder: {job.data['task']}")
-
-
 # Ensure voice messages directory exists
 os.makedirs(VOICE_DOWNLOAD_PATH, exist_ok=True)
+
 
 # Helper Functions
 async def update_authentication_user_data_based_on_setup_credentials(uid: str, context: ContextTypes.DEFAULT_TYPE):
