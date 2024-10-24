@@ -11,3 +11,5 @@ config.json
 venv/
 .DS_Store
 .venv/
+**/POC
+**/Submission
