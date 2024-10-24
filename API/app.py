@@ -1,3 +1,4 @@
+from BirthdayCardGenerator.birthday_card_generator import BirthdayCardGenerator
 from Database.Database import Database
 import sys
 import os
@@ -185,5 +186,15 @@ def log_event(event: dict):
         Database().log_event(event["user_id"],
                              event["event_name"], event["event_details"])
         return {"message": "Event logged successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/Jarvis/generate_birthday_video")
+def generate_birthday_video(name: str) -> bool:
+    try:
+        print("1")
+        BirthdayCardGenerator().generate_video(name)
+        return True
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

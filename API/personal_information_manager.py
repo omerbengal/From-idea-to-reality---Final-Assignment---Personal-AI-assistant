@@ -1,9 +1,22 @@
+import json
+import threading
+
 from open_ai_singleton import OpenAISingleton
 from API.GoogleServices.calendar_handler import *
 from Database.Database import Database
 
 
 class PersonalInformationManager:
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = super(PersonalInformationManager, cls).__new__(cls)
+        return cls._instance
+
     def __init__(self, uid: str):
         self.uid = uid
         self.db = Database()

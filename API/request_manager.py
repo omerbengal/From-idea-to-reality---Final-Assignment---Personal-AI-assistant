@@ -1,3 +1,4 @@
+import threading
 from open_ai_singleton import OpenAISingleton
 from GoogleServices.tasks_handler import *
 from GoogleServices.calendar_handler import get_now, get_xth_saturday_from_date, get_all_events_from_today_up_to_certain_date, \
@@ -9,6 +10,16 @@ import datetime
 
 
 class RequestManager:
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = super(RequestManager, cls).__new__(cls)
+        return cls._instance
+
     def __init__(self, uid: str):
         self.uid = uid
         self.db = Database()

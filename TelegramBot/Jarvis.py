@@ -29,8 +29,7 @@ client = OpenAI(
 
 # Constants
 BOT_TOKEN = config["TELEGRAM_BOT_TOKEN"]
-VIDEO_PATH = "../BirthdayCardGenerator/birthday_card.mp4"
-TEXT_FILE_PATH = "../BirthdayCardGenerator/birthday_message.txt"
+VIDEO_PATH = "../API/BirthdayCardGenerator/birthday_card.mp4"
 VOICE_DOWNLOAD_PATH = "./voice_messages/"
 ISRAEL_TZ = pytz.timezone('Asia/Jerusalem')
 
@@ -316,16 +315,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data['awaiting_name'] = False
 
             # Edit loading message before generating birthday text
-            await loading_message.edit_text("Generating birthday message...")
-            await generate_birthday_text(update, context, text)
-
-            # Edit loading message before generating video
-            await loading_message.edit_text("Creating birthday video...")
-            await generate_video(update, context)
+            await loading_message.edit_text("Generating birthday card video...\nPlease wait.")
+            await generate_birthday_video(text)
 
             # Send the video and edit the loading message again
             await send_video(update, context, VIDEO_PATH)
-            await loading_message.edit_text("Video sent!")
 
         elif context.user_data.get('authenticated'):
             response = handle_response(update, context, text)
@@ -343,148 +337,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await loading_message.edit_text(f"An error occurred while processing your message: {str(e)}")
 
+async def generate_birthday_video(name: str):
 
-async def generate_birthday_text(update: Update, context: ContextTypes.DEFAULT_TYPE, name: str):
-    prompt = f"""Generate a heartfelt and creative birthday message for {name}.
-    The message should be totally generic so it could fit anyone.
-    The message should always start with Happy birthday {name}!
-    The message should be no more than 5 lines (not including the starting line).
-    Make sure that each line is not longer than 75 characters.
-    Do not add an ending to the message like: Best wishes... From...
-    Separate each line."""
+    response = requests.get(
+        f"http://127.0.0.1:8000/Jarvis/generate_birthday_video?name={name}")
+    processed_response = process_api_response(response)
+    response_as_bool = eval(processed_response.lower().capitalize())
 
-    try:
-        messages = [
-            {"role": "system", "content": "You are a birthday card generator."},
-            {"role": "user", "content": prompt}
-        ]
-
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=messages,
-            temperature=0.7
-        )
-
-        birthday_message = response.choices[0].message.content.strip()
-
-        with open(TEXT_FILE_PATH, 'w') as f:
-            f.write(birthday_message)
-
-        await update.message.reply_text(f"Birthday message generated: {birthday_message}")
-
-    except Exception as e:
-        await update.message.reply_text(f"Error generating birthday text: {str(e)}")
-
-
-async def generate_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        await update.message.reply_text("Generating video, please wait...")
-
-        def get_birthday_message(file_path: str) -> str:
-            try:
-                with open(file_path, 'r') as file:
-                    return file.read().strip()
-            except Exception as err:
-                raise Exception(f"Error reading the text file: {err}")
-
-        birthday_message = get_birthday_message(TEXT_FILE_PATH)
-
-        def create_confetti(width: int, height: int, num_particles: int) -> list:
-            confetti = []
-            for _ in range(num_particles):
-                x = random.randint(0, width)
-                y = random.randint(0, height)
-                size = random.randint(10, 30)
-                color = (random.randint(0, 255), random.randint(
-                    0, 255), random.randint(0, 255))
-                confetti.append((x, y, size, color))
-            return confetti
-
-        def create_frame(base_image: Image, confetti: list, frame_number: int) -> np.ndarray:
-            frame_array = base_image.copy()
-            draw_element = ImageDraw.Draw(frame_array)
-
-            for x, y, size, color in confetti:
-                wrapped_y = (y + frame_number *
-                             10) % (frame_array.height + size)
-                draw_element.rectangle(
-                    [x, wrapped_y, x + size, wrapped_y + size], fill=color)
-
-            return np.array(frame_array)
-
-        images = ['../BirthdayCardGenerator/Blue.jpg', '../BirthdayCardGenerator/Green.jpg',
-                  '../BirthdayCardGenerator/Orange.jpg',
-                  '../BirthdayCardGenerator/Pink.jpg', '../BirthdayCardGenerator/Purple.jpg',
-                  '../BirthdayCardGenerator/Red.jpg',
-                  '../BirthdayCardGenerator/LightBlue.jpg']
-        base_image = Image.open(random.choice(images))
-
-        draw = ImageDraw.Draw(base_image)
-
-        font_path = "BirthdayCardGenerator/Rubik-VariableFont_wght.ttf"
-        font_size_first_line = 200
-        font_size_remaining_text = 140
-
-        font_first_line = ImageFont.truetype(font_path, font_size_first_line)
-        font_remaining_text = ImageFont.truetype(
-            font_path, font_size_remaining_text)
-
-        img_width, img_height = base_image.size
-
-        lines = birthday_message.split("\n", 1)
-        first_line = lines[0]
-        remaining_text = lines[1] if len(lines) > 1 else ""
-
-        first_line_bbox = draw.textbbox(
-            (0, 0), first_line, font=font_first_line)
-        first_line_width = first_line_bbox[2] - first_line_bbox[0]
-        first_line_height = first_line_bbox[3] - first_line_bbox[1]
-
-        first_line_position = (
-            (img_width - first_line_width) // 2, img_height // 5)
-
-        draw.text(first_line_position, first_line,
-                  font=font_first_line, fill="white")
-
-        if remaining_text:
-            remaining_lines = remaining_text.split("\n")
-            line_spacing = 30
-            extra_space_between_first_and_remaining = 250
-
-            remaining_text_position = (
-                first_line_position[0],
-                first_line_position[1] + first_line_height +
-                extra_space_between_first_and_remaining
-            )
-
-            for idx, line in enumerate(remaining_lines):
-                line_bbox = draw.textbbox(
-                    (0, 0), line, font=font_remaining_text)
-                line_width = line_bbox[2] - line_bbox[0]
-                line_position = (
-                    (img_width - line_width) // 2,
-                    remaining_text_position[1] + idx *
-                    (font_size_remaining_text + line_spacing)
-                )
-
-                draw.text(line_position, line,
-                          font=font_remaining_text, fill="white")
-
-        confetti = create_confetti(img_width, img_height, 100)
-
-        frames = []
-        for i in range(300):
-            frame = create_frame(base_image, confetti, i)
-            frames.append(frame)
-
-        clip = ImageSequenceClip(frames, fps=30)
-        clip.write_videofile(VIDEO_PATH)
-
-        await update.message.reply_text("Video generated successfully!")
-
-    except Exception as e:
-        await update.message.reply_text(f"Error generating video: {str(e)}")
-
+    if not response_as_bool:
+        raise Exception("Failed to generate birthday video")
 
 async def send_video(update: Update, context: ContextTypes.DEFAULT_TYPE, video_path: str):
     try:
@@ -507,6 +368,10 @@ async def send_video(update: Update, context: ContextTypes.DEFAULT_TYPE, video_p
                 connect_timeout=60
             )
 
+            # Clean up: delete the video file
+            if os.path.exists(video_path):
+                os.remove(video_path)
+
             # Send API request to log the event
             user_id = str(update.effective_user.id)
             event_data = {
@@ -520,11 +385,6 @@ async def send_video(update: Update, context: ContextTypes.DEFAULT_TYPE, video_p
                 print("Event logged successfully")
             else:
                 print(f"Failed to log event: {response.text}")
-
-            if os.path.exists(video_path):
-                os.remove(video_path)
-            if os.path.exists(TEXT_FILE_PATH):
-                os.remove(TEXT_FILE_PATH)
 
     except TimedOut as e:
         await update.message.reply_text(

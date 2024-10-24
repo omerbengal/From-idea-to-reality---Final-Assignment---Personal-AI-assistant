@@ -1,7 +1,19 @@
+import threading
 from open_ai_singleton import OpenAISingleton
 
 
 class StructureBreakManager:
+    _instance = None
+    _lock = threading.Lock()
+
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = super(StructureBreakManager, cls).__new__(cls)
+        return cls._instance
+
     def __init__(self):
         self.memory_categories_explanations = """Personal details - Information about the user's life, such as their name, age, gender, and occupation. The information in this category should only be about the user himself, not about his friends or any other person.
                                                                                             Interests And Hobbies - Activities and life interests that the user enjoys.
