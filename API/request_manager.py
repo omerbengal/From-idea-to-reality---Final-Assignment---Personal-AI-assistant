@@ -1,4 +1,3 @@
-from Database.Database import Database
 from open_ai_singleton import OpenAISingleton
 from GoogleServices.tasks_handler import *
 from GoogleServices.calendar_handler import get_now, get_xth_saturday_from_date, get_all_events_from_today_up_to_certain_date, \
@@ -42,9 +41,11 @@ class RequestManager:
         ### Task ###
         You will get a task that the user wishes you to do or to answer.
         A task will come in the form of >>>>>task<<<<<
+        
+        ### Recent Conversation History ###
+        You will get a recent conversation history between the user and the bot.
+        The recent conversation history will come in the form of a list of messages.
         """
-        # If the task is empty, you should reply: "I can't help you with that."
-        # """
 
         self.FUNCTIONS = [
             {
@@ -121,6 +122,7 @@ class RequestManager:
         """Get the Xth saturday from a given date"""
         return json.dumps({"Xth_saturday": get_xth_saturday_from_date(x, date).isoformat()})
 
+
     # maybe add argument: "calendars: list[dict[str, str]]"
     def get_all_events_from_today_up_to_certain_date_function(self, time_max: datetime):
         """Get all events from some calendars up to a certain date"""
@@ -128,21 +130,25 @@ class RequestManager:
             time_max, self.uid)  # maybe add argument: "calendars"
         return json.dumps(events, indent=4, ensure_ascii=False)
 
+
     def get_all_events_from_min_time_to_max_time_function(self, time_min: datetime, time_max: datetime,):
         """Get all events from a minimum datetime to a maximum datetime"""
         events = get_all_events_from_min_time_to_max_time(
             time_min, time_max, self.uid)
         return json.dumps(events, indent=4, ensure_ascii=False)
 
+
     def get_all_tasks_function(self):
         """Get all tasks, organized by lists"""
         tasks = get_all_tasks(self.uid)
         return json.dumps(tasks, indent=4, ensure_ascii=False)
 
+
     def get_all_uncompleted_tasks_function(self):
         """Get all uncompleted tasks, organized by lists"""
         tasks = get_all_uncompleted_tasks(self.uid)
         return json.dumps(tasks, indent=4, ensure_ascii=False)
+
 
     def get_recent_conversation_history(self, limit=10):
         """
@@ -153,41 +159,16 @@ class RequestManager:
         # Fetch the recent conversation history (last 10 user-bot exchanges).
         conversation_history = self.db.get_recent_conversation(self.uid, limit)
 
-        # Initialize a list to hold the formatted conversation as a string.
-        # formatted_history = []
-
-        # # Iterate over each entry in the conversation and format it.
-        # for entry in conversation_history:
-        #     # Add the 'Who sent' label followed by the 'Content'.
-        #     formatted_history.append(f"{entry['Who sent']}: {entry['Content']}")
-
-        # Join all messages into a single string with each entry on a new line.
-        # return "\n".join(formatted_history)
         return conversation_history
 
-    def get_response(self, prompt: str) -> str:
-        print("structure breaking")
-        st_br = StructureBreakManager().break_structure(prompt)
 
+    def get_response(self, prompt: str) -> str:
+        st_br = StructureBreakManager().break_structure(prompt)
         information = st_br["information"]
         if information:
             PersonalInformationManager(self.uid).organize_personal_information(information)
 
         task = st_br["task"]
-
-        # if task == "":
-        #     if  information:
-        #         return "There seems to be no task in your request, but I have organized your personal information."
-        #     else:
-        #         return "There seems to be no task in your request. So I can't help you with that."
-
-        # If we reach here - there exists a task!
-        # print("task is: "+ task)
-
-        # print("classifying relevance")
-        # # relevant = classify_relevance(task)
-        # # if relevant == "not relevant":
-        # #     return "I can not help you with that."
 
         # Fetch the recent conversation history (20 messages in total: 10 user + 10 bot)
         recent_history = self.get_recent_conversation_history(limit=10)

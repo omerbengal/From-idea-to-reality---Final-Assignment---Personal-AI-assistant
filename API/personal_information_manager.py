@@ -1,6 +1,5 @@
 from open_ai_singleton import OpenAISingleton
 from API.GoogleServices.calendar_handler import *
-from memory_handler import *
 from Database.Database import Database
 
 
@@ -88,15 +87,18 @@ class PersonalInformationManager:
         memory = self.db.get_user_memory(self.uid)
         return json.dumps(memory, indent=4, ensure_ascii=False)
 
+
     def add_to_memory_function(self, category: str, memory_instance: str):
         """Add a string to the memory dictionary"""
         self.db.update_user_memory(self.uid, category, memory_instance)
         return json.dumps({"success": True}, indent=4, ensure_ascii=False)
 
+
     def get_memory_categories_function(self):
         """Get all categories in the memory dictionary"""
         categories = self.db.get_user_memory(self.uid).keys()
         return json.dumps(categories, indent=4, ensure_ascii=False)
+
 
     def organize_personal_information(self, personal_information: list[str]):
         messages = [

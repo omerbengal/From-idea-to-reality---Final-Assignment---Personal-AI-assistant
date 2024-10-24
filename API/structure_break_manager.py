@@ -36,21 +36,12 @@ class StructureBreakManager:
         - Make sure to only use double quotes.
         - You must never alter the task or the information in the prompt.
         """
-        # - If there is no task - return an empty string.
-        # """
 
 
     def break_structure(self, prompt: str) -> dict:
         messages = [
-            # {"role": "system", "content": f"""Today's date is {TODAY}."""},
             {"role": "system", "content": self.STRUCTURE_BREAKER_SYSTEM_ROLE},
             {"role": "system", "content": f"!!!!!{self.memory_categories_explanations}!!!!!"},
-            # {"role": "user", "content": EXAMPLE3},
-            # {"role": "system", "content": EXAMPLE3_REASONING},
-            # # {"role": "assistant", "content": EXAMPLE1_OUTPUT},
-            # {"role": "user", "content": EXAMPLE4},
-            # {"role": "system", "content": EXAMPLE4_REASONING},
-            # # {"role": "assistant", "content": EXAMPLE2_OUTPUT},
             {"role": "user", "content": f">>>>>{prompt}<<<<<"}
         ]
 

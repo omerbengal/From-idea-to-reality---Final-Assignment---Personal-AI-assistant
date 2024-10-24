@@ -1,13 +1,12 @@
-from datetime import datetime, timedelta
-from API.GoogleServices.google_services_factory import GoogleServicesFactory
-from API.utilities import *
-from API.Database.Database import Database  # Import the Database class
-from datetime import timedelta
 import sys
 import os
 # add the root directory to the sys path
 sys.path.append(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
+from API.Database.Database import Database
+from API.utilities import *
+from API.GoogleServices.google_services_factory import GoogleServicesFactory
+from datetime import timedelta
 
 
 def get_xth_saturday_from_date(x: int, date: datetime = datetime.now(timezone.utc)) -> datetime:
